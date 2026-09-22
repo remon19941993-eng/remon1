@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التاجر | سوقي</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <style>
+    body.vendor-page { background: #fff; }
+    body.vendor-page .quran-banner { display: none; }
+    body.vendor-page .navbar {
+      background: #fff; border-bottom: 1px solid #eee;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    .v-panel {
+      background: #fff; border: 1px solid #eee; border-radius: 20px;
+      padding: 28px 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+      max-width: 480px; margin: 24px auto;
+    }
+    .v-panel h1 { font-size: 22px; margin: 0 0 6px; color: #222; text-align: center; }
+    .v-sub { color: #888; font-size: 14px; margin-bottom: 18px; text-align: center; }
+    .vendor-tabs {
+      display: flex; gap: 8px; margin-bottom: 20px; background: #f5f5f7;
+      padding: 6px; border-radius: 14px;
+    }
+    .vendor-tabs button {
+      flex: 1; border: none; background: transparent; padding: 12px;
+      border-radius: 10px; font-family: Cairo, sans-serif; font-weight: 700;
+      font-size: 14px; color: #666; cursor: pointer;
+    }
+    .vendor-tabs button.active {
+      background: #fff; color: #1a1a1e;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+      margin: 0 auto 16px; display: flex; width: fit-content;
+    }
+    .chip-ok { background: #e8f5e9; color: #2e7d32; }
+    .chip-trial { background: #fff8e1; color: #f57c00; }
+    .chip-off { background: #ffebee; color: #c62828; }
+    .my-product {
+      border: 1px solid #eee; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+      display: flex; gap: 12px; align-items: flex-start; background: #fafafa;
+    }
+    .my-product img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; background: #eee; }
+    .my-product .mp-info { flex: 1; }
+    .my-product .mp-actions { display: flex; flex-direction: column; gap: 6px; }
+    .my-product .mp-actions button {
+      font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+      font-family: Cairo, sans-serif; border: 1px solid #ddd;
+    }
+    .btn-del { background: #ffebee; color: #c62828; border-color: #ffcdd2 !important; }
+    .btn-edit { background: #e3f2fd; color: #1565c0; border-color: #bbdefb !important; }
+    .hidden { display: none !important; }
+    .join-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+  </style>
+</head>
+<body class="vendor-page">
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo logo-souqi">
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
+  <defs>
+    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/>
+      <stop offset="45%" stop-color="#1a1a22"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8e8ec"/>
+      <stop offset="100%" stop-color="#9a9aa5"/>
+    </linearGradient>
+  </defs>
+  <!-- wings -->
+  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
+  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
+  <!-- body -->
+  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
+  <!-- head -->
+  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
+  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
+  <!-- chest shield (flag colors) -->
+  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
+  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
+  <rect x="27" y="30" width="10" height="4" fill="#000"/>
+  <!-- stars on shield -->
+  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
+  <!-- tail -->
+  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
+</svg></div>
+        <div class="logo-text">
+          <strong class="brand-name">سوقي</strong>
+          <small>سوق إلكتروني</small>
+        </div>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="join.html">انضم كتاجر</a>
+        <a href="vendor.html" class="active">التاجر</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- دخول -->
+      <div class="v-panel" id="loginCard">
+        <div class="join-icon">🔐</div>
+        <h1>دخول التاجر</h1>
+        <p class="v-sub">3 أيام مجانية للنشر</p>
+        <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleGoogle()" style="margin-bottom:16px;">الدخول عبر Google</button>
+        <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بإيميل وكلمة مرور</p>
+        <form onsubmit="handleVendorLogin(event)">
+          <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" required></div>
+          <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPass" required></div>
+          <button type="submit" class="btn btn-primary full" id="loginBtn">دخول</button>
+        </form>
+        <p style="text-align:center;margin-top:16px;font-size:13px;">
+          <a href="join.html">انضم كتاجر جديد</a> ·
+          <a href="#" onclick="auth.signOut().then(function(){location.href='index.html'});return false;">تسجيل خروج</a>
+        </p>
+      </div>
+
+      <!-- محظور -->
+      <div class="v-panel hidden" id="blockedCard">
+        <div class="join-icon">⏳</div>
+        <h1>انتهت الفترة التجريبية</h1>
+        <p class="v-sub">أرسل 100 ليرة سورية أسبوعياً عبر شام كاش ثم راسل واتساب</p>
+        <div class="payment-box" style="text-align:center;">
+          <p><strong>100 ليرة سورية أسبوعياً</strong></p>
+          <a href="https://wa.me/963942591022?text=%D8%AF%D9%81%D8%B9%D8%AA%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83" target="_blank" class="btn btn-success full" style="margin:10px 0;background:#25D366;border:none;">واتساب للتفعيل</a>
+          <div class="sham-cash-id">23fc82cc5eafb5bd9ac013ba252b8599</div>
+        </div>
+        <button class="btn btn-outline full" onclick="logoutVendor()" style="margin-top:16px;">تسجيل خروج</button>
+      </div>
+
+      <!-- لوحة -->
+      <div class="v-panel hidden" id="publishCard" style="max-width:520px;">
+        <div class="join-icon">🏪</div>
+        <h1>لوحة التاجر</h1>
+        <p class="v-sub">مرحباً <strong id="vendorWelcome"></strong></p>
+        <div id="trialInfo" class="status-chip chip-trial"></div>
+
+        <div class="vendor-tabs">
+          <button type="button" class="active" id="tabPublish" onclick="showTab('publish')">نشر منتج</button>
+          <button type="button" id="tabMine" onclick="showTab('mine')">منتجاتي</button>
+        </div>
+
+        <div id="panelPublish">
+          <form id="productForm" onsubmit="handlePublish(event)">
+            <div class="form-group"><label>اسم المنتج</label><input type="text" id="productName" required></div>
+            <div class="form-group"><label>السعر (ليرة سورية)</label><input type="number" id="productPrice" required></div>
+            <div class="form-group"><label>وصف المنتج</label><input type="text" id="productDesc" required></div>
+            <div class="form-group">
+              <label>صورة المنتج (من جهازك)</label>
+              <input type="file" id="productImageFile" accept="image/*" style="padding:10px;">
+              <div id="imagePreview" style="margin-top:10px;display:none;">
+                <img id="previewImg" src="" alt="معاينة" style="max-width:100%;max-height:160px;border-radius:10px;">
+              </div>
+              <input type="url" id="productImg" placeholder="أو رابط صورة https://..." style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label>التصنيف</label>
+              <select id="productCategory" required>
+                <option value="electronics">أجهزة إلكترونية</option>
+                <option value="fashion">أزياء</option>
+                <option value="cosmetics">تجميل</option>
+                <option value="fabrics">أقمشة</option>
+                <option value="construction">مواد بناء</option>
+                <option value="pc">كمبيوتر</option>
+              </select>
+            </div>
+            <input type="hidden" id="editingId" value="">
+            <button type="submit" class="btn btn-primary full btn-lg" id="publishBtn">نشر المنتج</button>
+          </form>
+          <div id="publishSuccess" class="success-message hidden" style="text-align:center;padding:20px;">
+            <h3>✅ تم الحفظ!</h3>
+            <p style="margin-top:8px;color:#555;">سيظهر في الرئيسية والتصنيف</p>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="resetPublishForm()">منتج آخر</button>
+            <button class="btn btn-outline" style="margin-top:8px;" onclick="showTab('mine')">عرض منتجاتي</button>
+            <a href="index.html" class="btn btn-outline" style="margin-top:8px;display:inline-block;">الرئيسية</a>
+          </div>
+        </div>
+
+        <div id="panelMine" class="hidden">
+          <div id="myProductsList"><p style="text-align:center;color:#888;">جاري التحميل...</p></div>
+        </div>
+
+        <button class="btn btn-outline full" onclick="logoutVendor()" style="margin-top:20px;">تسجيل خروج</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var currentVendor = null;
+    var editingProduct = null;
+    var myProductsCache = [];
+
+    function showLogin() {
+      document.getElementById('loginCard').classList.remove('hidden');
+      document.getElementById('publishCard').classList.add('hidden');
+      document.getElementById('blockedCard').classList.add('hidden');
+    }
+    function showPublish(v) {
+      currentVendor = v;
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('blockedCard').classList.add('hidden');
+      document.getElementById('publishCard').classList.remove('hidden');
+      document.getElementById('vendorWelcome').textContent = (v && (v.shopName || v.fullName)) || 'تاجر';
+      var info = document.getElementById('trialInfo');
+      if (v && v.status === 'trial') {
+        info.className = 'status-chip chip-trial';
+        info.textContent = '🎁 تجريبي — متبقي ' + getTrialDaysLeft(v) + ' يوم';
+      } else if (v && v.status === 'active') {
+        info.className = 'status-chip chip-ok';
+        info.textContent = '✓ حساب مفعّل — اشتراك نشط';
+      } else {
+        info.className = 'status-chip chip-off';
+        info.textContent = 'متوقف';
+      }
+      showTab('publish');
+    }
+    function showBlocked() {
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('publishCard').classList.add('hidden');
+      document.getElementById('blockedCard').classList.remove('hidden');
+    }
+    function openPanel(v) {
+      if (!v) { showLogin(); return; }
+      try { sessionStorage.setItem('souqi_vendor', JSON.stringify(v)); } catch (e) {}
+      if (typeof isAllowedToPublish === 'function' && isAllowedToPublish(v)) showPublish(v);
+      else showBlocked();
+    }
+    function showTab(name) {
+      document.getElementById('tabPublish').classList.toggle('active', name === 'publish');
+      document.getElementById('tabMine').classList.toggle('active', name === 'mine');
+      document.getElementById('panelPublish').classList.toggle('hidden', name !== 'publish');
+      document.getElementById('panelMine').classList.toggle('hidden', name !== 'mine');
+      if (name === 'mine') loadMyProducts();
+    }
+
+    async function handleVendorLogin(e) {
+      e.preventDefault();
+      var btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'جاري الدخول...';
+      try {
+        var result = await loginMerchant(
+          document.getElementById('loginEmail').value.trim(),
+          document.getElementById('loginPass').value
+        );
+        if (result.success) openPanel(result.vendor);
+        else alert(result.error || 'فشل الدخول');
+      } catch (err) {
+        alert('خطأ: ' + (err.message || err));
+      }
+      btn.disabled = false; btn.textContent = 'دخول';
+    }
+
+    async function handleGoogle() {
+      var btn = document.getElementById('googleBtn');
+      btn.disabled = true; btn.textContent = 'جاري التحويل إلى Google...';
+      try {
+        var result = await loginWithGoogle();
+        if (result.redirecting) return;
+        if (result.success && result.vendor) {
+          openPanel(result.vendor);
+          return;
+        }
+        if (!result.success) alert(result.error || 'فشل الدخول');
+      } catch (err) {
+        if (auth.currentUser) openPanel({
+          id: auth.currentUser.uid,
+          shopName: auth.currentUser.displayName || 'متجري',
+          fullName: auth.currentUser.displayName || '',
+          email: auth.currentUser.email || '',
+          status: 'trial',
+          joinDate: new Date().toISOString()
+        });
+        else alert('خطأ: ' + (err.message || err));
+      }
+      btn.disabled = false; btn.textContent = 'الدخول عبر Google';
+    }
+
+    document.getElementById('productImageFile').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        document.getElementById('previewImg').src = ev.target.result;
+        document.getElementById('imagePreview').style.display = 'block';
+        document.getElementById('productImg').value = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function handlePublish(e) {
+      e.preventDefault();
+      if (!currentVendor) { alert('سجّل الدخول أولاً'); return; }
+      var btn = document.getElementById('publishBtn');
+      btn.disabled = true; btn.textContent = 'جاري النشر...';
+      try {
+        var imageUrl = document.getElementById('productImg').value.trim();
+        var fileInput = document.getElementById('productImageFile');
+        if (fileInput.files && fileInput.files[0]) {
+          var up = await uploadProductImage(fileInput.files[0], currentVendor.id);
+          if (up.success) imageUrl = up.url;
+          else if (!imageUrl) { alert(up.error || 'فشل رفع الصورة'); btn.disabled = false; btn.textContent = 'نشر المنتج'; return; }
+        }
+        var data = {
+          name: document.getElementById('productName').value.trim(),
+          price: document.getElementById('productPrice').value + ' ل.س',
+          desc: document.getElementById('productDesc').value.trim(),
+          img: imageUrl,
+          category: document.getElementById('productCategory').value,
+          vendor: currentVendor.shopName || currentVendor.fullName || 'تاجر',
+          vendorId: currentVendor.id,
+          phone: currentVendor.phone || ''
+        };
+        if (editingProduct) {
+          await updateProduct(editingProduct, data);
+          editingProduct = null;
+          document.getElementById('editingId').value = '';
+        } else {
+          await publishProductToFirebase(data);
+        }
+        document.getElementById('productForm').classList.add('hidden');
+        document.getElementById('publishSuccess').classList.remove('hidden');
+        btn.textContent = 'نشر المنتج';
+      } catch (err) {
+        alert('خطأ: ' + (err.message || err));
+        btn.disabled = false;
+        btn.textContent = 'نشر المنتج';
+      }
+    }
+
+    function resetPublishForm() {
+      editingProduct = null;
+      document.getElementById('productForm').reset();
+      document.getElementById('editingId').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('productForm').classList.remove('hidden');
+      document.getElementById('publishSuccess').classList.add('hidden');
+      document.getElementById('publishBtn').textContent = 'نشر المنتج';
+      document.getElementById('publishBtn').disabled = false;
+    }
+
+    async function loadMyProducts() {
+      var box = document.getElementById('myProductsList');
+      if (!currentVendor) { box.innerHTML = '<p>سجّل الدخول أولاً</p>'; return; }
+      box.innerHTML = '<p style="text-align:center;color:#888;">جاري التحميل...</p>';
+      var list = [];
+      try { list = await getMyProducts(currentVendor.id); } catch (e) {
+        try {
+          var all = JSON.parse(localStorage.getItem('local_products') || '[]');
+          list = all.filter(function(p) { return p.vendorId === currentVendor.id; });
+        } catch (e2) {}
+      }
+      myProductsCache = list;
+      if (!list.length) {
+        box.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">لا توجد منتجات بعد.</p>';
+        return;
+      }
+      box.innerHTML = list.map(function(p, idx) {
+        var img = (p.img && (p.img.indexOf('http') === 0 || p.img.indexOf('data:') === 0))
+          ? '<img src="' + p.img + '" alt="">'
+          : '<div style="width:64px;height:64px;border-radius:10px;background:#eee;display:flex;align-items:center;justify-content:center;">📦</div>';
+        return '<div class="my-product">' + img +
+          '<div class="mp-info"><strong>' + (p.name || '') + '</strong><br>' + (p.price || '') +
+          '<br><small>' + (p.category || '') + '</small></div>' +
+          '<div class="mp-actions">' +
+          '<button type="button" class="btn-edit" onclick="editProduct(' + idx + ')">تعديل</button>' +
+          '<button type="button" class="btn-del" onclick="removeProduct(' + idx + ')">مسح</button>' +
+          '</div></div>';
+      }).join('');
+    }
+
+    function editProduct(idx) {
+      var p = myProductsCache[idx];
+      if (!p) return;
+      editingProduct = p;
+      showTab('publish');
+      document.getElementById('productName').value = p.name || '';
+      document.getElementById('productPrice').value = parseInt(p.price, 10) || '';
+      document.getElementById('productDesc').value = p.desc || '';
+      document.getElementById('productCategory').value = p.category || 'electronics';
+      document.getElementById('productImg').value = (p.img && p.img.indexOf('http') === 0) ? p.img : '';
+      if (p.img && p.img.indexOf('data:') === 0) {
+        document.getElementById('previewImg').src = p.img;
+        document.getElementById('imagePreview').style.display = 'block';
+      }
+      document.getElementById('publishBtn').textContent = 'حفظ التعديل';
+      document.getElementById('productForm').classList.remove('hidden');
+      document.getElementById('publishSuccess').classList.add('hidden');
+    }
+
+    async function removeProduct(idx) {
+      var p = myProductsCache[idx];
+      if (!p || !confirm('مسح «' + (p.name || '') + '»؟')) return;
+      await deleteProduct(p);
+      loadMyProducts();
+    }
+
+    function logoutVendor() {
+      auth.signOut().then(function() { currentVendor = null; try{sessionStorage.removeItem('souqi_vendor');}catch(e){} showLogin(); });
+    }
+
+    function vendorFromAuthUser(user) {
+      return {
+        id: user.uid,
+        shopName: user.displayName || 'متجري',
+        fullName: user.displayName || '',
+        email: user.email || '',
+        status: 'trial',
+        joinDate: new Date().toISOString()
+      };
+    }
+
+    // استعادة الجلسة فوراً من الذاكرة حتى لا يظهر تسجيل الدخول بالخطأ
+    try {
+      var cached = JSON.parse(sessionStorage.getItem('souqi_vendor') || 'null');
+      if (cached && cached.id) {
+        currentVendor = cached;
+        openPanel(cached);
+      } else {
+        showLogin();
+      }
+    } catch (e) {
+      showLogin();
+    }
+
+    (async function initVendorPage() {
+      try {
+        var redir = await handleGoogleRedirectResult();
+        if (redir && redir.success && redir.vendor) {
+          openPanel(redir.vendor);
+          return;
+        }
+      } catch (e) {}
+      try {
+        if (auth.currentUser) {
+          var v = await getCurrentVendor();
+          openPanel(v || vendorFromAuthUser(auth.currentUser));
+        }
+      } catch (e2) {}
+    })();
+
+    var authReady = false;
+    auth.onAuthStateChanged(async function(user) {
+      authReady = true;
+      if (user) {
+        try {
+          var v = await getCurrentVendor();
+          openPanel(v || vendorFromAuthUser(user));
+        } catch (e) {
+          openPanel(vendorFromAuthUser(user));
+        }
+      } else {
+        // لا تسجّل خروج فوري — انتظر لحظة (يمنع وميض تسجيل الدخول عند التنقل)
+        setTimeout(function() {
+          if (!auth.currentUser) {
+            currentVendor = null;
+            try { sessionStorage.removeItem('souqi_vendor'); } catch (e) {}
+            showLogin();
+          }
+        }, 800);
+      }
+    });
+  </script>
+</body>
+</html>

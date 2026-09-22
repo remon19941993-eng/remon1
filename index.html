@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سوقي | سوق إلكتروني</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <style>
+    .hero-visual-img { width:100%; height:360px; object-fit:cover; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.1); }
+    .product-img { height:180px; overflow:hidden; background:#f4f1ec; }
+    .product-img img { width:100%; height:100%; object-fit:cover; }
+    .category-card { padding:0 !important; overflow:hidden; text-decoration:none; color:inherit; display:block; }
+    .cat-img { height:130px; overflow:hidden; background:#f0ebe3; }
+    .cat-img img { width:100%; height:100%; object-fit:cover; }
+    .cat-info { padding:14px 12px; text-align:center; }
+    .cat-info h3 { font-size:14px; margin-bottom:4px; }
+    .cat-info p { font-size:12px; color:#777; }
+  </style>
+</head>
+<body>
+  <div class="quran-banner">
+    <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p>
+  </div>
+
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo logo-souqi">
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
+  <defs>
+    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/>
+      <stop offset="45%" stop-color="#1a1a22"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8e8ec"/>
+      <stop offset="100%" stop-color="#9a9aa5"/>
+    </linearGradient>
+  </defs>
+  <!-- wings -->
+  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
+  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
+  <!-- body -->
+  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
+  <!-- head -->
+  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
+  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
+  <!-- chest shield (flag colors) -->
+  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
+  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
+  <rect x="27" y="30" width="10" height="4" fill="#000"/>
+  <!-- stars on shield -->
+  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
+  <!-- tail -->
+  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
+</svg></div>
+        <div class="logo-text">
+          <strong class="brand-name">سوقي</strong>
+          <small>سوق إلكتروني</small>
+        </div>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="active">الرئيسية</a>
+        <a href="join.html">انضم كتاجر</a>
+        <a href="customer.html">تسجيل</a>
+        <a href="vendor.html">دخول التاجر</a>
+        <a href="#featuresMenu" class="nav-cta">المميزات</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-content">
+      <div class="hero-text">
+        <h1>سوق واحد<br>لجميع التجار</h1>
+        <p>اكتشف آلاف المنتجات من أفضل التجار<br>إنشاءات • إلكترونيات • أقمشة • تجميل • كمبيوتر</p>
+        <div class="hero-buttons">
+          <a href="join.html" class="btn btn-primary">انضم كتاجر الآن</a>
+          <a href="customer.html" class="btn btn-outline">تسجيل</a>
+        </div>
+        <div class="trial-badge">🎁 اشتراك مجاني 3 أيام للتجار الجدد</div>
+      </div>
+      <div class="hero-visual">
+        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&q=80" alt="أجهزة أنيقة" class="hero-visual-img">
+      </div>
+    </div>
+  </section>
+
+  <section id="categories" class="categories">
+    <div class="container">
+      <h2 class="section-title">التصنيفات الرئيسية</h2>
+      <div class="categories-grid">
+        <a href="category.html?cat=construction" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&q=80" alt="مواد بناء"></div>
+          <div class="cat-info"><h3>مواد البناء</h3><p>إسمنت وحديد وبلاط</p></div>
+        </a>
+        <a href="category.html?cat=pc" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80" alt="كمبيوتر"></div>
+          <div class="cat-info"><h3>كمبيوتر وإلكترونيات</h3><p>لابتوب وهواتف</p></div>
+        </a>
+        <a href="category.html?cat=fabrics" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&q=80" alt="أقمشة"></div>
+          <div class="cat-info"><h3>أقمشة وخامات</h3><p>قطنية وحريرية</p></div>
+        </a>
+        <a href="category.html?cat=cosmetics" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80" alt="تجميل"></div>
+          <div class="cat-info"><h3>مواد التجميل</h3><p>عطور وكريمات</p></div>
+        </a>
+        <a href="category.html?cat=electronics" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" alt="إلكترونيات"></div>
+          <div class="cat-info"><h3>أجهزة إلكترونية</h3><p>سماعات وساعات</p></div>
+        </a>
+        <a href="category.html?cat=fashion" class="category-card">
+          <div class="cat-img"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80" alt="أزياء"></div>
+          <div class="cat-info"><h3>أزياء وإكسسوارات</h3><p>ملابس وحقائب</p></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">منتجات مميزة</h2>
+        <a href="#" class="view-all">عرض الكل ←</a>
+      </div>
+      <div class="products-grid" id="productsGrid"></div>
+    </div>
+  </section>
+
+  <section class="quiz-feature" id="featuresMenu">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">قائمة المميزات</h2>
+      </div>
+      <div class="features-menu">
+        <div class="feature-menu-card" onclick="openQuizCat('geo')">
+          <div class="fm-icon">🌍</div>
+          <h3>أسئلة جغرافيا</h3>
+          <p>عواصم ودول وقارات — ادخل والعب</p>
+        </div>
+        <div class="feature-menu-card" onclick="openQuizCat('islamic')">
+          <div class="fm-icon">📖</div>
+          <h3>أسئلة إسلامية</h3>
+          <p>فقه وسيرة وقرآن — ادخل والعب</p>
+        </div>
+        <div class="feature-menu-card" onclick="openQuizCat('general')">
+          <div class="fm-icon">💡</div>
+          <h3>أسئلة عامة</h3>
+          <p>ثقافة عامة وحساب — ادخل والعب</p>
+        </div>
+        <div class="feature-menu-card" onclick="openQuizCat('all')">
+          <div class="fm-icon">🎯</div>
+          <h3>تحدي شامل</h3>
+          <p>أكثر من 1000 سؤال — خصم عند الإجابة</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>سوقي</h4>
+          <p>منصة متعددة التجار تجمع أفضل المنتجات.</p>
+        </div>
+        <div>
+          <h4>روابط سريعة</h4>
+          <a href="join.html">انضم كتاجر</a>
+          <a href="customer.html">تسجيل</a>
+        </div>
+        <div>
+          <h4>تواصل معنا</h4>
+          <p>واتساب: +963942591022</p>
+          <p>شام كاش: 23fc82cc5eafb5bd9ac013ba252b8599</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 سوقي - جميع الحقوق محفوظة</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="ai-assistant" onclick="toggleAI()" title="مساعد ذكي">
+    <div class="ai-avatar">
+      <span class="ai-face ai-robot-3d">🤖</span>
+    </div>
+    <span class="ai-text">AI مساعد</span>
+  </div>
+
+  <div class="ai-panel" id="aiPanel">
+    <div class="ai-header">
+      <span>🤖 مساعد سوقي AI</span>
+      <button type="button" onclick="toggleAI()">×</button>
+    </div>
+    <div class="ai-body">
+      <p id="aiReply">مرحباً! اختر سؤالاً أو اكتب رسالتك:</p>
+      <div class="ai-quick" style="display:flex;flex-direction:column;gap:8px;margin:12px 0;">
+        <button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('products')">📦 البحث عن منتجات</button>
+        <button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('vendor')">🏪 نصائح للتجار</button>
+        <button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('quiz')">✨ تحدي الأسئلة والخصم</button>
+        <button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('admin')">📞 التواصل مع الإدارة</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" placeholder="اكتب سؤالك..." class="ai-input" id="aiInput" style="flex:1;">
+        <button type="button" class="btn btn-primary" onclick="aiSend()">إرسال</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="quizModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeQuiz()">×</button>
+      <h3 id="quizTitle">✨ تحدي السؤال</h3>
+      <div class="quiz-cat-bar" id="quizCatBar">
+        <button type="button" data-cat="all" class="active" onclick="switchQuizCat('all')">الكل</button>
+        <button type="button" data-cat="geo" onclick="switchQuizCat('geo')">جغرافيا</button>
+        <button type="button" data-cat="islamic" onclick="switchQuizCat('islamic')">إسلامية</button>
+        <button type="button" data-cat="general" onclick="switchQuizCat('general')">عامة</button>
+      </div>
+      <p class="quiz-question" id="quizQuestion">...</p>
+      <div class="quiz-options" id="quizOptions"></div>
+      <p class="quiz-reward">أجب بشكل صحيح واحصل على بطاقة خصم</p>
+      <div id="quizResult" class="quiz-result hidden"></div>
+    </div>
+  </div>
+
+  <script src="js/quiz.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة الأدمن | سوق الشام</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Cairo, sans-serif; background: #f5f3ee; }
+    .admin-dashboard { display: flex; min-height: 100vh; }
+    .admin-dashboard.hidden { display: none !important; }
+    .sidebar { width: 200px; background: #111; color: #fff; padding: 18px 12px; flex-shrink: 0; }
+    .sidebar-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-size: 14px; }
+    .sidebar-nav a {
+      display: block; color: #bbb; padding: 12px 12px; border-radius: 10px;
+      margin-bottom: 6px; text-decoration: none; font-size: 14px; font-weight: 600;
+    }
+    .sidebar-nav a.active, .sidebar-nav a:hover { background: #2a2a2a; color: #fff; }
+    .admin-main { flex: 1; padding: 18px; overflow-x: auto; }
+    .admin-header h2 { margin: 0 0 4px; font-size: 20px; }
+    .admin-header p { margin: 0 0 16px; color: #666; font-size: 13px; }
+
+    /* بطاقة التاجر */
+    .v-card {
+      background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+      border: 2px solid #e8e4dc; display: flex; flex-wrap: wrap; gap: 12px;
+      align-items: center; justify-content: space-between; transition: 0.2s;
+    }
+    .v-card.on { border-color: #43a047; background: linear-gradient(135deg, #e8f5e9, #fff); box-shadow: 0 0 0 3px rgba(67,160,71,0.15); }
+    .v-card.trial { border-color: #fb8c00; background: linear-gradient(135deg, #fff8e1, #fff); }
+    .v-card.off { border-color: #e53935; background: linear-gradient(135deg, #ffebee, #fff); opacity: 0.92; }
+
+    .dot {
+      display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-left: 6px;
+      vertical-align: middle;
+    }
+    .dot-on { background: #43a047; box-shadow: 0 0 8px #43a047; }
+    .dot-trial { background: #fb8c00; box-shadow: 0 0 8px #fb8c00; }
+    .dot-off { background: #e53935; box-shadow: 0 0 6px #e53935; }
+
+    .status-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-weight: 800; font-size: 13px; margin-top: 6px;
+      padding: 4px 12px; border-radius: 999px;
+    }
+    .sl-on { background: #c8e6c9; color: #1b5e20; }
+    .sl-trial { background: #ffe0b2; color: #e65100; }
+    .sl-off { background: #ffcdd2; color: #b71c1c; }
+
+    .btn-act {
+      border: none; border-radius: 10px; padding: 11px 16px; font-family: Cairo, sans-serif;
+      font-weight: 800; font-size: 13px; cursor: pointer; margin: 2px; min-width: 120px;
+    }
+    .btn-activate { background: #2e7d32; color: #fff; }
+    .btn-activate:disabled { background: #81c784; color: #fff; cursor: default; }
+    .btn-stop { background: #c62828; color: #fff; }
+    .btn-stop:disabled { background: #ef9a9a; color: #fff; cursor: default; }
+    .btn-del { background: #424242; color: #fff; padding: 8px 12px; border: none; border-radius: 8px; font-family: Cairo; font-weight: 700; font-size: 12px; cursor: pointer; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111; color: #fff; padding: 12px 22px; border-radius: 999px;
+      font-weight: 700; font-size: 14px; z-index: 9999; opacity: 0; transition: 0.3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .login-screen { min-height: 85vh; display: flex; align-items: center; justify-content: center; }
+    .login-screen.hidden { display: none !important; }
+    .login-card {
+      background: #fff; padding: 32px; border-radius: 16px; width: min(360px, 92vw);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1); text-align: center;
+    }
+    .c-row, .p-row {
+      background: #fff; padding: 14px; border-radius: 12px; margin-bottom: 8px;
+      border: 1px solid #eee; display: flex; gap: 12px; align-items: center;
+    }
+    .p-row img { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; background: #eee; }
+    .hidden { display: none !important; }
+    @media (max-width: 700px) {
+      .admin-dashboard { flex-direction: column; }
+      .sidebar { width: 100%; }
+      .sidebar-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+      .sidebar-nav a { flex: 1; text-align: center; min-width: 70px; padding: 10px 6px; font-size: 12px; }
+      .btn-act { min-width: 100px; padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="quran-banner">
+    <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p>
+  </div>
+
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <h2>لوحة الأدمن</h2>
+      <p style="color:#888;margin-bottom:18px;">ريمون فقط</p>
+      <form onsubmit="adminLogin(event)">
+        <div class="form-group">
+          <input type="password" id="adminPassword" required placeholder="كلمة السر" style="text-align:center;width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;font-family:Cairo;">
+        </div>
+        <button type="submit" class="btn btn-primary full" style="margin-top:12px;">دخول</button>
+      </form>
+      <p style="margin-top:12px;font-size:12px;color:#aaa;">كلمة السر: remon1993</p>
+    </div>
+  </div>
+
+  <div id="adminDashboard" class="admin-dashboard hidden">
+    <div class="sidebar">
+      <div class="sidebar-logo" style="flex-wrap:wrap;">
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+  <rect width="36" height="8" y="0" fill="#007A3D"/>
+  <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+  <rect width="36" height="8" y="16" fill="#000000"/>
+  <g fill="#CE1126">
+    <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+    <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+    <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+  </g>
+</svg>
+        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
+  <defs>
+    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/>
+      <stop offset="45%" stop-color="#1a1a22"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8e8ec"/>
+      <stop offset="100%" stop-color="#9a9aa5"/>
+    </linearGradient>
+  </defs>
+  <!-- wings -->
+  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
+  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
+  <!-- body -->
+  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
+  <!-- head -->
+  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
+  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
+  <!-- chest shield (flag colors) -->
+  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
+  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
+  <rect x="27" y="30" width="10" height="4" fill="#000"/>
+  <!-- stars on shield -->
+  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
+  <!-- tail -->
+  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
+</svg></div>
+        <strong class="brand-name">سوقي</strong>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" id="navVendors" class="active" onclick="showSection('vendors');return false;">التجار</a>
+        <a href="#" id="navCustomers" onclick="showSection('customers');return false;">الزبائن</a>
+        <a href="#" id="navProducts" onclick="showSection('products');return false;">المنتجات</a>
+        <a href="#" onclick="logoutAdmin();return false;">خروج</a>
+      </nav>
+    </div>
+
+    <div class="admin-main">
+      <div class="admin-header">
+        <h2>لوحة التحكم — ريمون</h2>
+        <p>تفعيل أو إيقاف الاشتراك · قائمة الزبائن · مسح المنتجات</p>
+      </div>
+
+      <!-- التجار -->
+      <div id="vendorsSection" class="admin-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <h3 style="margin:0;">التجار والاشتراك</h3>
+          <button type="button" class="btn btn-success" onclick="loadVendors()">تحديث</button>
+        </div>
+        <p style="font-size:13px;color:#666;margin:0 0 14px;">
+          ● أخضر = مشترك مفعّل &nbsp;|&nbsp; ● برتقالي = تجربة 3 أيام &nbsp;|&nbsp; ● أحمر = متوقف
+        </p>
+        <div id="vendorsList"></div>
+      </div>
+
+      <!-- الزبائن -->
+      <div id="customersSection" class="admin-section hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="margin:0;">قائمة الزبائن</h3>
+          <button type="button" class="btn btn-success" onclick="loadCustomers()">تحديث</button>
+        </div>
+        <div id="customersList"></div>
+      </div>
+
+      <!-- المنتجات -->
+      <div id="productsSection" class="admin-section hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="margin:0;">المنتجات</h3>
+          <button type="button" class="btn btn-success" onclick="loadProducts()">تحديث</button>
+        </div>
+        <div id="productsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var vendorsCache = [];
+    var productsCache = [];
+
+    function toast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+
+    function adminLogin(e) {
+      e.preventDefault();
+      if (document.getElementById('adminPassword').value === 'remon1993') {
+        localStorage.setItem('admin_logged_in', 'true');
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        loadVendors();
+      } else {
+        toast('كلمة السر غير صحيحة');
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('admin_logged_in');
+      location.reload();
+    }
+
+    function showSection(name) {
+      ['vendors', 'customers', 'products'].forEach(function(s) {
+        document.getElementById(s + 'Section').classList.toggle('hidden', s !== name);
+        var nav = document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1));
+        if (nav) nav.classList.toggle('active', s === name);
+      });
+      if (name === 'vendors') loadVendors();
+      if (name === 'customers') loadCustomers();
+      if (name === 'products') loadProducts();
+    }
+
+    function getStatus(v) {
+      if (v.status === 'active') {
+        return { card: 'on', label: 'sl-on', dot: 'dot-on', text: 'مشترك مفعّل', isOn: true };
+      }
+      if (v.status === 'trial') {
+        var left = (typeof getTrialDaysLeft === 'function') ? getTrialDaysLeft(v) : 3;
+        var allowed = (typeof isAllowedToPublish === 'function') ? isAllowedToPublish(v) : left > 0;
+        if (!allowed || left <= 0) {
+          return { card: 'off', label: 'sl-off', dot: 'dot-off', text: 'انتهت التجربة', isOn: false };
+        }
+        return { card: 'trial', label: 'sl-trial', dot: 'dot-trial', text: 'تجريبي — باقي ' + left + ' يوم', isOn: false, isTrial: true };
+      }
+      return { card: 'off', label: 'sl-off', dot: 'dot-off', text: 'متوقف — لا نشر', isOn: false };
+    }
+
+    async function loadVendors() {
+      var box = document.getElementById('vendorsList');
+      box.innerHTML = '<p style="color:#888;">جاري التحميل...</p>';
+      try {
+        vendorsCache = await getVendors();
+      } catch (e) {
+        vendorsCache = [];
+      }
+      if (!vendorsCache.length) {
+        box.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">لا يوجد تجار بعد.<br>عندما يسجّل تاجر بجوجل أو الإيميل يظهر هنا فوراً.</p>';
+        return;
+      }
+      box.innerHTML = vendorsCache.map(function(v, i) {
+        var st = getStatus(v);
+        var name = v.shopName || v.fullName || 'تاجر';
+        return (
+          '<div class="v-card ' + st.card + '">' +
+            '<div style="flex:1;min-width:180px;">' +
+              '<div style="font-size:16px;font-weight:800;">' + name + '</div>' +
+              '<div style="font-size:13px;color:#555;margin-top:2px;">' + (v.fullName || '') + '</div>' +
+              '<div style="font-size:12px;color:#888;margin-top:4px;" dir="ltr">' + (v.email || '-') + ' · ' + (v.phone || '') + '</div>' +
+              '<div style="font-size:12px;color:#888;">' + (v.category || '-') + ' · ' + String(v.joinDate || v.createdAt || '').slice(0, 10) + '</div>' +
+              '<div class="status-label ' + st.label + '"><span class="dot ' + st.dot + '"></span>' + st.text + '</div>' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:6px;">' +
+              '<button type="button" class="btn-act btn-activate" ' + (st.isOn ? 'disabled' : '') + ' onclick="activateVendor(' + i + ')">' +
+                (st.isOn ? '✓ مفعّل الآن' : 'تفعيل الاشتراك') +
+              '</button>' +
+              '<button type="button" class="btn-act btn-stop" ' + (!st.isOn && !st.isTrial ? 'disabled' : '') + ' onclick="deactivateVendor(' + i + ')">' +
+                (!st.isOn && !st.isTrial ? '⏹ متوقف' : 'إيقاف الاشتراك') +
+              '</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    async function activateVendor(i) {
+      var v = vendorsCache[i];
+      if (!v || !v.id) { toast('لا يوجد معرف للتاجر'); return; }
+      await setVendorStatus(v.id, 'active');
+      vendorsCache[i] = Object.assign({}, v, { status: 'active', daysLeft: 7 });
+      toast('● تم التفعيل — ' + (v.shopName || v.email || ''));
+      loadVendors();
+    }
+
+    async function deactivateVendor(i) {
+      var v = vendorsCache[i];
+      if (!v || !v.id) return;
+      await setVendorStatus(v.id, 'inactive');
+      vendorsCache[i] = Object.assign({}, v, { status: 'inactive', daysLeft: 0 });
+      toast('● تم الإيقاف — ' + (v.shopName || v.email || ''));
+      loadVendors();
+    }
+
+    async function loadCustomers() {
+      var box = document.getElementById('customersList');
+      box.innerHTML = '<p style="color:#888;">جاري التحميل...</p>';
+      var list = [];
+      try {
+        var snap = await Promise.race([
+          db.collection('customers').get(),
+          new Promise(function(_, rej) { setTimeout(function() { rej(new Error('t')); }, 8000); })
+        ]);
+        list = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+      } catch (e) {}
+      try {
+        var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
+        local.forEach(function(c) {
+          if (!list.some(function(x) { return (x.email && x.email === c.email) || (x.id && x.id === c.id); })) {
+            list.push(c);
+          }
+        });
+      } catch (e2) {}
+      if (!list.length) {
+        box.innerHTML = '<p style="color:#888;text-align:center;padding:20px;">لا زبائن مسجّلين بعد.<br>يظهر هنا كل من سجّل من صفحة «تسجيل».</p>';
+        return;
+      }
+      box.innerHTML = list.map(function(c) {
+        return (
+          '<div class="c-row">' +
+            '<div style="flex:1;">' +
+              '<strong>' + (c.name || c.fullName || 'زبون') + '</strong><br>' +
+              '<span style="font-size:13px;color:#555;" dir="ltr">' + (c.email || '-') + '</span><br>' +
+              '<small style="color:#888;" dir="ltr">' + (c.phone || '') + ' · ' + String(c.createdAt || '').slice(0, 19) + '</small>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    async function loadProducts() {
+      var box = document.getElementById('productsList');
+      box.innerHTML = '<p style="color:#888;">جاري التحميل...</p>';
+      try {
+        productsCache = await getProducts();
+      } catch (e) {
+        productsCache = [];
+      }
+      if (!productsCache.length) {
+        box.innerHTML = '<p style="color:#888;">لا توجد منتجات</p>';
+        return;
+      }
+      box.innerHTML = productsCache.map(function(p, i) {
+        var img = (p.img && (p.img.indexOf('http') === 0 || p.img.indexOf('data:') === 0))
+          ? '<img src="' + p.img + '" alt="">'
+          : '<div style="width:52px;height:52px;border-radius:8px;background:#eee;display:flex;align-items:center;justify-content:center;">📦</div>';
+        return (
+          '<div class="p-row">' + img +
+            '<div style="flex:1;"><strong>' + (p.name || '') + '</strong> — ' + (p.price || '') + '<br>' +
+            '<small style="color:#888;">' + (p.vendor || '') + ' | ' + (p.category || '') + '</small></div>' +
+            '<button type="button" class="btn-del" onclick="adminDeleteProduct(' + i + ')">مسح</button>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    async function adminDeleteProduct(i) {
+      var p = productsCache[i];
+      if (!p) return;
+      if (!confirm('مسح المنتج: ' + (p.name || '') + '؟')) return;
+      await deleteProduct(p);
+      toast('تم مسح المنتج');
+      loadProducts();
+    }
+
+    if (localStorage.getItem('admin_logged_in') === 'true') {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('adminDashboard').classList.remove('hidden');
+      loadVendors();
+    }
+  </script>
+</body>
+</html>

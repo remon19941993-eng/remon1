@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>انضم كتاجر | سوقي</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-app.js"></script>
+</head>
+<body>
+  <div class="quran-banner">
+    <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p>
+  </div>
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo logo-souqi">
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
+        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
+  <defs>
+    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/>
+      <stop offset="45%" stop-color="#1a1a22"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8e8ec"/>
+      <stop offset="100%" stop-color="#9a9aa5"/>
+    </linearGradient>
+  </defs>
+  <!-- wings -->
+  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
+  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
+  <!-- body -->
+  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
+  <!-- head -->
+  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
+  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
+  <!-- chest shield (flag colors) -->
+  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
+  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
+  <rect x="27" y="30" width="10" height="4" fill="#000"/>
+  <!-- stars on shield -->
+  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
+  <!-- tail -->
+  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
+</svg></div>
+        <div class="logo-text"><strong class="brand-name">سوقي</strong><small>سوق إلكتروني</small></div>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="join.html" class="active">انضم كتاجر</a>
+        <a href="customer.html">تسجيل</a>
+        <a href="vendor.html">دخول التاجر</a>
+      </nav>
+    </div>
+  </header>
+  <main class="join-page">
+    <div class="container">
+      <div class="join-card">
+        <div class="join-header">
+          <div class="join-icon">🏪</div>
+          <h1>انضم كتاجر في سوقي</h1>
+          <p class="subtitle">3 أيام مجانية ثم 100 ليرة سورية أسبوعياً عبر شام كاش</p>
+        </div>
+        <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleGoogle()" style="margin-bottom:16px;">التسجيل / الدخول عبر Google</button>
+        <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بالبريد وكلمة المرور</p>
+        <form onsubmit="handleJoin(event)">
+          <div class="form-group"><label>الاسم الكامل</label><input type="text" id="fullName" required></div>
+          <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email" required></div>
+          <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" required minlength="6"></div>
+          <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="phone" required></div>
+          <div class="form-group"><label>اسم المتجر</label><input type="text" id="shopName" required></div>
+          <div class="form-group">
+            <label>التصنيف</label>
+            <select id="category" required>
+              <option value="">اختر التصنيف</option>
+              <option value="electronics">إلكترونيات</option>
+              <option value="fashion">أزياء</option>
+              <option value="cosmetics">تجميل</option>
+              <option value="fabrics">أقمشة</option>
+              <option value="construction">مواد البناء</option>
+              <option value="pc">كمبيوتر</option>
+            </select>
+          </div>
+          <div class="payment-box" style="text-align:center;">
+            <p style="margin-bottom:10px;"><strong>الاشتراك: 100 ليرة سورية أسبوعياً</strong></p>
+            <p style="font-size:13px;color:#666;">بعد 3 أيام مجانية أرسل عبر شام كاش ثم راسل واتساب للتفعيل</p>
+            <a href="https://wa.me/963942591022?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%20%D8%AF%D9%81%D8%B9%D8%AA%20100%20%D9%84%D9%8A%D8%B1%D8%A9%20%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D8%B3%D9%88%D9%82%D9%8A" target="_blank" class="btn btn-success full" style="margin:12px 0;background:#25D366;border:none;">واتساب للتفعيل +963 942 591 022</a>
+            <p style="font-size:12px;color:#888;margin-top:8px;">رقم شام كاش:</p>
+            <div class="sham-cash-id" style="cursor:pointer;user-select:all;" onclick="navigator.clipboard&&navigator.clipboard.writeText('23fc82cc5eafb5bd9ac013ba252b8599');">23fc82cc5eafb5bd9ac013ba252b8599</div>
+            <p style="font-size:11px;color:#999;">اضغط على الرقم لنسخه</p>
+          </div>
+          <button type="submit" class="btn btn-primary full btn-lg" id="joinBtn">ابدأ الاشتراك المجاني</button>
+        </form>
+        <p style="text-align:center;margin-top:14px;font-size:13px;">
+          لديك حساب؟ <a href="vendor.html">دخول التاجر</a>
+        </p>
+        <div id="joinMsg" style="margin-top:12px;text-align:center;font-size:14px;"></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    function showMsg(text, ok) {
+      var el = document.getElementById('joinMsg');
+      el.style.color = ok ? '#2e7d32' : '#c62828';
+      el.textContent = text;
+    }
+    async function handleJoin(e) {
+      e.preventDefault();
+      var btn = document.getElementById('joinBtn');
+      btn.disabled = true; btn.textContent = 'جاري التسجيل...';
+      showMsg('');
+      var data = {
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        shopName: document.getElementById('shopName').value.trim(),
+        category: document.getElementById('category').value
+      };
+      var email = document.getElementById('email').value.trim();
+      var pass = document.getElementById('password').value;
+      try {
+        var result = await registerMerchant(email, pass, data);
+        if (result.success) {
+          showMsg('تم التسجيل — جاري فتح لوحة التاجر...', true);
+          setTimeout(function() { location.href = 'vendor.html'; }, 600);
+          return;
+        }
+        if ((result.error || '').indexOf('مسجل') >= 0) {
+          var login = await loginMerchant(email, pass);
+          if (login.success) { location.href = 'vendor.html'; return; }
+          showMsg('الإيميل مسجل مسبقاً. ادخل من «دخول التاجر» أو Google.', false);
+        } else showMsg(result.error || 'فشل التسجيل', false);
+      } catch (err) { showMsg('خطأ: ' + (err.message || err), false); }
+      btn.disabled = false; btn.textContent = 'ابدأ الاشتراك المجاني';
+    }
+    async function handleGoogle() {
+      var btn = document.getElementById('googleBtn');
+      btn.disabled = true; btn.textContent = 'جاري التحويل إلى Google...';
+      showMsg('سيتم فتح Google ثم العودة تلقائياً...', true);
+      try {
+        var result = await loginWithGoogle();
+        if (result.redirecting) return;
+        if (result.success && result.vendor) { location.href = 'vendor.html'; return; }
+        showMsg(result.error || 'فشل الدخول', false);
+      } catch (err) { showMsg('خطأ Google: ' + (err.message || err), false); }
+      btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google';
+    }
+    (async function() {
+      var r = await handleGoogleRedirectResult();
+      if (r && r.success) location.href = 'vendor.html';
+    })();
+  </script>
+</body>
+</html>

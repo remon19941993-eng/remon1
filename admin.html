@@ -235,14 +235,26 @@
       location.reload();
     }
 
+    var customerRefreshTimer = null;
+
     function showSection(name) {
       ['vendors', 'customers', 'products'].forEach(function(s) {
         document.getElementById(s + 'Section').classList.toggle('hidden', s !== name);
         var nav = document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1));
         if (nav) nav.classList.toggle('active', s === name);
       });
+      if (customerRefreshTimer) {
+        clearInterval(customerRefreshTimer);
+        customerRefreshTimer = null;
+      }
       if (name === 'vendors') loadVendors();
-      if (name === 'customers') loadCustomers();
+      if (name === 'customers') {
+        loadCustomers();
+        // تحديث تلقائي حتى يظهر الزبون بعد تسجيله دون الحاجة لإعادة فتح الصفحة.
+        customerRefreshTimer = setInterval(function() {
+          loadCustomers();
+        }, 5000);
+      }
       if (name === 'products') loadProducts();
     }
 

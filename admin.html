@@ -386,7 +386,7 @@
       var v = vendorsCache[i];
       if (!v) { toast('تاجر غير موجود'); return; }
       var name = v.shopName || v.fullName || v.email || 'تاجر';
-      if (!confirm('مسح التاجر «' + name + '» نهائياً مع منتجاته؟')) return;
+      /* تنفيذ مباشر بدون تأكيد */
       var id = v.id;
       // محلي فوري
       try {
@@ -416,7 +416,7 @@
       var c = customersCache[i];
       if (!c) { toast('زبون غير موجود'); return; }
       var name = c.fullName || c.name || c.email || 'زبون';
-      if (!confirm('مسح الزبون «' + name + '»؟')) return;
+      /* تنفيذ مباشر */
       try {
         if (typeof deleteCustomer === 'function') await deleteCustomer(c.id, c.email);
         else {
@@ -435,7 +435,7 @@
     async function adminDeleteProduct(i) {
       var p = productsCache[i];
       if (!p) return;
-      if (!confirm('مسح المنتج: ' + (p.name || '') + '؟')) return;
+      /* تنفيذ مباشر */
       await deleteProduct(p);
       toast('تم مسح المنتج');
       loadProducts();

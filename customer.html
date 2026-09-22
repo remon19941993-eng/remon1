@@ -11,26 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-app.js"></script>
-  <style>
-    .profile-card {
-      max-width: 420px; margin: 28px auto; background: #fff; border-radius: 20px;
-      border: 1px solid #eee; box-shadow: 0 8px 32px rgba(0,0,0,0.06); padding: 28px 22px; text-align: center;
-    }
-    .profile-avatar {
-      width: 96px; height: 96px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px;
-      background: linear-gradient(145deg,#e8e8ec,#c8c8d0); display: flex; align-items: center; justify-content: center;
-      font-size: 42px; overflow: hidden; border: 3px solid #f0f0f0;
-    }
-    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .profile-name { font-size: 20px; font-weight: 800; margin: 0 0 4px; }
-    .profile-meta { color: #666; font-size: 14px; margin: 4px 0; direction: ltr; }
-    .profile-row {
-      text-align: right; background: #fafafa; border-radius: 12px; padding: 12px 14px; margin: 8px 0;
-      font-size: 14px; display: flex; justify-content: space-between; gap: 10px;
-    }
-    .profile-row span { color: #888; }
-    .profile-row strong { color: #222; word-break: break-all; }
-  </style>
 </head>
 <body>
   <div class="quran-banner">
@@ -56,7 +36,6 @@
 
   <main class="join-page">
     <div class="container">
-      <!-- تسجيل -->
       <div class="join-card" id="loginBox">
         <div class="join-header">
           <div class="join-icon">👤</div>
@@ -64,28 +43,15 @@
           <p class="subtitle">للزبائن — مجاني بالكامل</p>
         </div>
         <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleCustomerGoogle()" style="margin-bottom:16px;">التسجيل / الدخول عبر Google</button>
+        <p id="googleStatus" style="text-align:center;color:#888;font-size:13px;min-height:18px;"></p>
         <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بالبريد وكلمة المرور</p>
         <form id="custForm" onsubmit="handleCustomer(event)">
-          <div class="form-group"><label>الاسم</label><input type="text" id="fullName" required></div>
+          <div class="form-group"><label>الاسم</label><input type="text" id="fullName"></div>
           <div class="form-group"><label>البريد</label><input type="email" id="email" required></div>
           <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" required minlength="6"></div>
           <div class="form-group"><label>الهاتف</label><input type="tel" id="phone"></div>
           <button type="submit" class="btn btn-primary full" id="custBtn">تسجيل / دخول</button>
         </form>
-      </div>
-
-      <!-- حساب شخصي -->
-      <div class="profile-card hidden" id="profileBox">
-        <div class="profile-avatar" id="profAvatar">👤</div>
-        <h2 class="profile-name" id="profName">—</h2>
-        <p class="profile-meta" id="profEmail">—</p>
-        <div class="profile-row"><span>الاسم</span><strong id="profName2">—</strong></div>
-        <div class="profile-row"><span>البريد</span><strong id="profEmail2" dir="ltr">—</strong></div>
-        <div class="profile-row"><span>الهاتف</span><strong id="profPhone" dir="ltr">—</strong></div>
-        <div class="profile-row"><span>تاريخ التسجيل</span><strong id="profDate">—</strong></div>
-        <div class="profile-row"><span>نوع الحساب</span><strong>زبون</strong></div>
-        <a href="index.html" class="btn btn-primary full" style="margin-top:16px;">تصفح المتجر</a>
-        <button type="button" class="btn btn-outline full" style="margin-top:10px;" onclick="logoutCustomer()">تسجيل خروج</button>
       </div>
     </div>
   </main>
@@ -94,6 +60,13 @@
     function resetGoogleBtn() {
       var btn = document.getElementById('googleBtn');
       if (btn) { btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google'; }
+      var st = document.getElementById('googleStatus');
+      if (st) st.textContent = '';
+    }
+
+    function goHomeAfterLogin() {
+      try { sessionStorage.setItem('souqi_just_logged_in', '1'); } catch (e) {}
+      location.href = 'index.html';
     }
 
     async function saveCustomerUser(u, extra) {
@@ -103,7 +76,7 @@
       var payload = {
         fullName: (extra && extra.fullName) || u.displayName || u.fullName || '',
         email: u.email || (extra && extra.email) || '',
-        phone: (extra && extra.phone) || u.phone || '',
+        phone: (extra && extra.phone) || '',
         photoURL: u.photoURL || '',
         id: id,
         createdAt: new Date().toISOString(),
@@ -120,129 +93,88 @@
       return payload;
     }
 
-    function showProfile(c) {
-      document.getElementById('loginBox').classList.add('hidden');
-      document.getElementById('profileBox').classList.remove('hidden');
-      document.getElementById('profName').textContent = c.fullName || c.name || 'زبون';
-      document.getElementById('profName2').textContent = c.fullName || c.name || '—';
-      document.getElementById('profEmail').textContent = c.email || '';
-      document.getElementById('profEmail2').textContent = c.email || '—';
-      document.getElementById('profPhone').textContent = c.phone || '—';
-      document.getElementById('profDate').textContent = String(c.createdAt || '').slice(0, 19) || '—';
-      var av = document.getElementById('profAvatar');
-      if (c.photoURL) {
-        av.innerHTML = '<img src="' + c.photoURL + '" alt="">';
-      } else {
-        av.textContent = '👤';
-      }
-    }
-
-    function showLogin() {
-      document.getElementById('loginBox').classList.remove('hidden');
-      document.getElementById('profileBox').classList.add('hidden');
-      resetGoogleBtn();
-    }
-
     async function handleCustomer(e) {
       e.preventDefault();
       var btn = document.getElementById('custBtn');
-      btn.disabled = true; btn.textContent = 'جاري التسجيل...';
+      btn.disabled = true; btn.textContent = 'جاري...';
+      var email = document.getElementById('email').value.trim();
+      var pass = document.getElementById('password').value;
       var extra = {
         fullName: document.getElementById('fullName').value.trim(),
         phone: document.getElementById('phone').value.trim()
       };
-      var result = await registerCustomer(
-        document.getElementById('email').value.trim(),
-        document.getElementById('password').value,
-        extra
-      );
+      // جرّب الدخول أولاً
+      try {
+        var login = await auth.signInWithEmailAndPassword(email, pass);
+        await saveCustomerUser(login.user, extra);
+        goHomeAfterLogin();
+        return;
+      } catch (e1) {}
+      // ثم التسجيل
+      var result = await registerCustomer(email, pass, extra);
       if (result.success) {
-        var u = auth.currentUser;
-        var c = await saveCustomerUser(u, extra);
-        showProfile(c || extra);
-      } else {
-        // إن كان مسجلاً مسبقاً جرّب الدخول
-        try {
-          var login = await auth.signInWithEmailAndPassword(
-            document.getElementById('email').value.trim(),
-            document.getElementById('password').value
-          );
-          var c2 = await saveCustomerUser(login.user, extra);
-          showProfile(c2);
-          return;
-        } catch (e2) {}
-        alert(result.error || 'فشل التسجيل');
-        btn.disabled = false; btn.textContent = 'تسجيل';
+        await saveCustomerUser(auth.currentUser, extra);
+        goHomeAfterLogin();
+        return;
       }
+      alert(result.error || 'فشل');
+      btn.disabled = false; btn.textContent = 'تسجيل / دخول';
     }
 
     async function handleCustomerGoogle() {
       var btn = document.getElementById('googleBtn');
-      if (!btn) return;
-      btn.disabled = true; btn.textContent = 'جاري الاتصال...';
-      var t = setTimeout(function() {
-        resetGoogleBtn();
-        alert('انتهت المهلة. جرّب مرة أخرى أو سجّل بالبريد.');
-      }, 20000);
+      var st = document.getElementById('googleStatus');
+      btn.disabled = true;
+      btn.textContent = 'جاري التحويل...';
+      if (st) st.textContent = 'سيفتح Google ثم يعود تلقائياً...';
       try {
         var result = await loginWithGoogle({ asCustomer: true });
         if (result && result.redirecting) {
-          btn.textContent = 'جاري التحويل إلى Google...';
+          if (st) st.textContent = 'انتظر فتح Google...';
           return;
         }
-        clearTimeout(t);
         if (result && result.success) {
           var u = result.user || auth.currentUser;
-          if (!u) { resetGoogleBtn(); alert('لم يتم الدخول'); return; }
-          var c = await saveCustomerUser(u);
-          showProfile(c || { fullName: u.displayName, email: u.email, photoURL: u.photoURL });
+          await saveCustomerUser(u);
+          goHomeAfterLogin();
           return;
         }
-        alert((result && result.error) || 'فشل الدخول');
+        alert((result && result.error) || 'فشل Google');
       } catch (e) {
-        clearTimeout(t);
         alert(e.message || 'فشل Google');
       }
       resetGoogleBtn();
     }
 
-    async function logoutCustomer() {
-      try {
-        var c = null;
-        try { c = JSON.parse(sessionStorage.getItem('souqi_customer') || 'null'); } catch (e) {}
-        var uid = (c && c.id) || (auth.currentUser && auth.currentUser.uid);
-        var email = (c && c.email) || (auth.currentUser && auth.currentUser.email);
-        if (typeof deleteCustomer === 'function') await deleteCustomer(uid, email);
-      } catch (e) {}
-      try { sessionStorage.removeItem('souqi_customer'); } catch (e2) {}
-      try { await auth.signOut(); } catch (e3) {}
-      showLogin();
-    }
+    // عند العودة من Google أو تحديث الصفحة
+    window.addEventListener('pageshow', resetGoogleBtn);
 
-    // استعادة جلسة + redirect Google
     (async function init() {
+      resetGoogleBtn();
       try {
         var r = await handleGoogleRedirectResult();
         if (r && r.success) {
           var u = r.user || auth.currentUser;
           if (u) {
-            var c = await saveCustomerUser(u);
-            showProfile(c || { fullName: u.displayName, email: u.email, photoURL: u.photoURL });
+            await saveCustomerUser(u);
+            goHomeAfterLogin();
             return;
           }
         }
       } catch (e) {}
-      try {
-        var cached = JSON.parse(sessionStorage.getItem('souqi_customer') || 'null');
-        if (cached && cached.id) { showProfile(cached); }
-      } catch (e2) {}
-      auth.onAuthStateChanged(async function(user) {
-        if (user) {
-          var c = await saveCustomerUser(user);
-          showProfile(c || { fullName: user.displayName, email: user.email, photoURL: user.photoURL });
-        }
+      // إن كان مسجلاً مسبقاً → الرئيسية
+      if (auth.currentUser) {
+        try {
+          var mode = sessionStorage.getItem('souqi_auth_mode');
+          if (mode !== 'vendor') {
+            await saveCustomerUser(auth.currentUser);
+            // لا نحوّل تلقائياً إن فتح الصفحة عمداً — فقط بعد redirect
+          }
+        } catch (e2) {}
+      }
+      auth.onAuthStateChanged(function(user) {
+        // لا شيء إضافي
       });
-      resetGoogleBtn();
     })();
   </script>
 </body>

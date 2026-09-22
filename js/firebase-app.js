@@ -130,7 +130,17 @@ async function loginWithGoogle(opts) {
   provider.setCustomParameters({ prompt: "select_account" });
   try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e) {}
 
-  // جرّب popup أولاً (أسرع) — إن فشل استخدم redirect
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  // على الجوال: redirect مباشرة (أوثق)
+  if (isMobile) {
+    try {
+      await auth.signInWithRedirect(provider);
+      return { success: true, redirecting: true };
+    } catch (e) {
+      return { success: false, error: e.message || "فشل التحويل إلى Google" };
+    }
+  }
+
   try {
     var result = await auth.signInWithPopup(provider);
     if (asCustomer) return { success: true, user: result.user };
@@ -144,18 +154,12 @@ async function loginWithGoogle(opts) {
       if (asCustomer) return { success: true, user: auth.currentUser };
       return { success: true, vendor: vendorFromUser(auth.currentUser, {}) };
     }
-    var msg = (e && e.message) || "";
-    var code = (e && e.code) || "";
-    // إن أُغلق أو حُظر popup → redirect
-    if (code.indexOf("popup") >= 0 || /popup|blocked|cancelled|closed/i.test(msg) || true) {
-      try {
-        await auth.signInWithRedirect(provider);
-        return { success: true, redirecting: true };
-      } catch (e2) {
-        return { success: false, error: (e2.message || msg || "فشل الدخول عبر Google") };
-      }
+    try {
+      await auth.signInWithRedirect(provider);
+      return { success: true, redirecting: true };
+    } catch (e2) {
+      return { success: false, error: (e2.message || e.message || "فشل الدخول عبر Google") };
     }
-    return { success: false, error: msg || "فشل الدخول عبر Google" };
   }
 }
 

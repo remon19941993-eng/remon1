@@ -96,7 +96,16 @@
         createdAt: new Date().toISOString(),
         type: 'customer'
       };
-      try { await db.collection('customers').doc(id).set(payload, { merge: true }); } catch (e) {}
+      try {
+        await Promise.race([
+          db.collection('customers').doc(id).set(payload, { merge: true }),
+          new Promise(function(_, reject) {
+            setTimeout(function() { reject(new Error('Firestore timeout')); }, 5000);
+          })
+        ]);
+      } catch (e) {
+        console.warn('تعذر حفظ بيانات العميل في Firestore:', e);
+      }
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
         local = local.filter(function(c) { return c.id !== id; });
@@ -108,12 +117,19 @@
 
     async function finishCustomerLogin(user, extra) {
       if (!user || finishing) return;
-      await saveCustomerUser(user, extra);
+
+      // تثبيت جلسة العميل والتحويل فوراً؛ Firestore لا يجب أن يمنع تسجيل الدخول.
       try {
         sessionStorage.removeItem('souqi_pending_customer');
         sessionStorage.setItem('souqi_customer', '1');
       } catch (e) {}
+
       showSuccessAndHome();
+
+      // حفظ بيانات العميل في الخلفية مع مهلة، دون تعطيل التحويل.
+      saveCustomerUser(user, extra).catch(function(e) {
+        console.warn('Customer profile save failed:', e);
+      });
     }
 
     async function handleCustomer(e) {
@@ -130,7 +146,21 @@
         var login = await auth.signInWithEmailAndPassword(email, pass);
         await finishCustomerLogin(login.user, extra);
         return;
-      } catch (e1) {}
+      } catch (e1) {
+        console.warn('Customer sign-in failed:', e1);
+        if (e1 && e1.code !== 'auth/user-not-found') {
+          var messages = {
+            'auth/wrong-password': 'البريد أو كلمة المرور غير صحيحة.',
+            'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة.',
+            'auth/invalid-email': 'البريد الإلكتروني غير صحيح.',
+            'auth/too-many-requests': 'تمت محاولات كثيرة. حاول لاحقاً.'
+          };
+          alert(messages[e1.code] || e1.message || 'تعذر تسجيل الدخول.');
+          btn.disabled = false;
+          btn.textContent = 'تسجيل / دخول';
+          return;
+        }
+      }
       var result = await registerCustomer(email, pass, extra);
       if (result.success && auth.currentUser) {
         await finishCustomerLogin(auth.currentUser, extra);

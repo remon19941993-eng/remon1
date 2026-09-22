@@ -317,9 +317,20 @@
           }
         } catch (popupError) {
           console.warn('Google popup:', popupError);
-          // إذا منع المتصفح النافذة أو كانت العملية غير مدعومة، نستخدم redirect كاحتياط.
-          if (popupError && !['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(popupError.code)) {
-            throw popupError;
+
+          // إذا أغلق الزبون نافذة Google، نبقى في صفحة الدخول ولا نسجله.
+          if (popupError && ['auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(popupError.code)) {
+            resetGoogleBtn();
+            if (st) st.textContent = '';
+            return;
+          }
+
+          // إذا منع المتصفح popup، نستخدم redirect كاحتياط.
+          if (popupError && popupError.code !== 'auth/popup-blocked') {
+            resetGoogleBtn();
+            if (st) st.textContent = '';
+            alert('تعذر تسجيل الدخول عبر Google: ' + (popupError.message || popupError));
+            return;
           }
         }
 

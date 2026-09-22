@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل | سوقي</title>
+  <title>حسابي | سوقي</title>
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -11,6 +11,26 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-app.js"></script>
+  <style>
+    .profile-card {
+      max-width: 420px; margin: 28px auto; background: #fff; border-radius: 20px;
+      border: 1px solid #eee; box-shadow: 0 8px 32px rgba(0,0,0,0.06); padding: 28px 22px; text-align: center;
+    }
+    .profile-avatar {
+      width: 96px; height: 96px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px;
+      background: linear-gradient(145deg,#e8e8ec,#c8c8d0); display: flex; align-items: center; justify-content: center;
+      font-size: 42px; overflow: hidden; border: 3px solid #f0f0f0;
+    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-name { font-size: 20px; font-weight: 800; margin: 0 0 4px; }
+    .profile-meta { color: #666; font-size: 14px; margin: 4px 0; direction: ltr; }
+    .profile-row {
+      text-align: right; background: #fafafa; border-radius: 12px; padding: 12px 14px; margin: 8px 0;
+      font-size: 14px; display: flex; justify-content: space-between; gap: 10px;
+    }
+    .profile-row span { color: #888; }
+    .profile-row strong { color: #222; word-break: break-all; }
+  </style>
 </head>
 <body>
   <div class="quran-banner">
@@ -21,57 +41,30 @@
     <div class="container nav-content">
       <div class="logo logo-souqi">
         <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
-        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
-  <defs>
-    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3a3a42"/>
-      <stop offset="45%" stop-color="#1a1a22"/>
-      <stop offset="100%" stop-color="#0d0d12"/>
-    </linearGradient>
-    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#e8e8ec"/>
-      <stop offset="100%" stop-color="#9a9aa5"/>
-    </linearGradient>
-  </defs>
-  <!-- wings -->
-  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
-  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
-  <!-- body -->
-  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
-  <!-- head -->
-  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
-  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
-  <!-- chest shield (flag colors) -->
-  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
-  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
-  <rect x="27" y="30" width="10" height="4" fill="#000"/>
-  <!-- stars on shield -->
-  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
-  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
-  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
-  <!-- tail -->
-  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
-</svg></div>
+        <div class="logo-mark" title="سوقي"><span style="font-size:22px;">🦅</span></div>
         <div class="logo-text"><strong class="brand-name">سوقي</strong><small>سوق إلكتروني</small></div>
         <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
       </div>
       <nav class="nav-links">
         <a href="index.html">الرئيسية</a>
         <a href="join.html">انضم كتاجر</a>
-        <a href="customer.html" class="active">تسجيل</a>
+        <a href="customer.html" class="active">حسابي</a>
         <a href="vendor.html">دخول التاجر</a>
       </nav>
     </div>
   </header>
+
   <main class="join-page">
     <div class="container">
-      <div class="join-card">
+      <!-- تسجيل -->
+      <div class="join-card" id="loginBox">
         <div class="join-header">
           <div class="join-icon">👤</div>
           <h1>تسجيل / اشتراك</h1>
           <p class="subtitle">للزبائن — مجاني بالكامل</p>
         </div>
         <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleCustomerGoogle()" style="margin-bottom:16px;">التسجيل / الدخول عبر Google</button>
+        <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بالبريد وكلمة المرور</p>
         <form id="custForm" onsubmit="handleCustomer(event)">
           <div class="form-group"><label>الاسم</label><input type="text" id="fullName" required></div>
           <div class="form-group"><label>البريد</label><input type="email" id="email" required></div>
@@ -79,25 +72,39 @@
           <div class="form-group"><label>الهاتف</label><input type="tel" id="phone"></div>
           <button type="submit" class="btn btn-primary full" id="custBtn">تسجيل</button>
         </form>
-        <div id="okMsg" class="success-message hidden" style="text-align:center;padding:20px;">
-          <h3>✅ تم التسجيل بنجاح</h3>
-          <a href="index.html" class="btn btn-primary" style="margin-top:12px;">العودة للرئيسية</a>
-        </div>
+      </div>
+
+      <!-- حساب شخصي -->
+      <div class="profile-card hidden" id="profileBox">
+        <div class="profile-avatar" id="profAvatar">👤</div>
+        <h2 class="profile-name" id="profName">—</h2>
+        <p class="profile-meta" id="profEmail">—</p>
+        <div class="profile-row"><span>الاسم</span><strong id="profName2">—</strong></div>
+        <div class="profile-row"><span>البريد</span><strong id="profEmail2" dir="ltr">—</strong></div>
+        <div class="profile-row"><span>الهاتف</span><strong id="profPhone" dir="ltr">—</strong></div>
+        <div class="profile-row"><span>تاريخ التسجيل</span><strong id="profDate">—</strong></div>
+        <div class="profile-row"><span>نوع الحساب</span><strong>زبون</strong></div>
+        <a href="index.html" class="btn btn-primary full" style="margin-top:16px;">تصفح المتجر</a>
+        <button type="button" class="btn btn-outline full" style="margin-top:10px;" onclick="logoutCustomer()">تسجيل خروج</button>
       </div>
     </div>
   </main>
-    <script>
+
+  <script>
     function resetGoogleBtn() {
       var btn = document.getElementById('googleBtn');
       if (btn) { btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google'; }
     }
 
-    async function saveCustomerUser(u) {
-      if (!u || !u.uid && !u.id) return;
+    async function saveCustomerUser(u, extra) {
+      if (!u) return null;
       var id = u.uid || u.id;
+      if (!id) return null;
       var payload = {
-        fullName: u.displayName || u.fullName || '',
-        email: u.email || '',
+        fullName: (extra && extra.fullName) || u.displayName || u.fullName || '',
+        email: u.email || (extra && extra.email) || '',
+        phone: (extra && extra.phone) || u.phone || '',
+        photoURL: u.photoURL || '',
         id: id,
         createdAt: new Date().toISOString(),
         type: 'customer'
@@ -109,25 +116,61 @@
         local.unshift(payload);
         localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
       } catch (e2) {}
+      try { sessionStorage.setItem('souqi_customer', JSON.stringify(payload)); } catch (e3) {}
+      return payload;
+    }
+
+    function showProfile(c) {
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('profileBox').classList.remove('hidden');
+      document.getElementById('profName').textContent = c.fullName || c.name || 'زبون';
+      document.getElementById('profName2').textContent = c.fullName || c.name || '—';
+      document.getElementById('profEmail').textContent = c.email || '';
+      document.getElementById('profEmail2').textContent = c.email || '—';
+      document.getElementById('profPhone').textContent = c.phone || '—';
+      document.getElementById('profDate').textContent = String(c.createdAt || '').slice(0, 19) || '—';
+      var av = document.getElementById('profAvatar');
+      if (c.photoURL) {
+        av.innerHTML = '<img src="' + c.photoURL + '" alt="">';
+      } else {
+        av.textContent = '👤';
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('loginBox').classList.remove('hidden');
+      document.getElementById('profileBox').classList.add('hidden');
+      resetGoogleBtn();
     }
 
     async function handleCustomer(e) {
       e.preventDefault();
       var btn = document.getElementById('custBtn');
       btn.disabled = true; btn.textContent = 'جاري التسجيل...';
+      var extra = {
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phone').value.trim()
+      };
       var result = await registerCustomer(
         document.getElementById('email').value.trim(),
         document.getElementById('password').value,
-        {
-          fullName: document.getElementById('fullName').value.trim(),
-          phone: document.getElementById('phone').value.trim()
-        }
+        extra
       );
       if (result.success) {
-        document.getElementById('custForm').classList.add('hidden');
-        document.getElementById('googleBtn').classList.add('hidden');
-        document.getElementById('okMsg').classList.remove('hidden');
+        var u = auth.currentUser;
+        var c = await saveCustomerUser(u, extra);
+        showProfile(c || extra);
       } else {
+        // إن كان مسجلاً مسبقاً جرّب الدخول
+        try {
+          var login = await auth.signInWithEmailAndPassword(
+            document.getElementById('email').value.trim(),
+            document.getElementById('password').value
+          );
+          var c2 = await saveCustomerUser(login.user, extra);
+          showProfile(c2);
+          return;
+        } catch (e2) {}
         alert(result.error || 'فشل التسجيل');
         btn.disabled = false; btn.textContent = 'تسجيل';
       }
@@ -136,18 +179,15 @@
     async function handleCustomerGoogle() {
       var btn = document.getElementById('googleBtn');
       btn.disabled = true; btn.textContent = 'جاري الاتصال...';
-      // إعادة الزر إن لم يكتمل خلال 25 ثانية
       var t = setTimeout(resetGoogleBtn, 25000);
       try {
         var result = await loginWithGoogle({ asCustomer: true });
-        if (result.redirecting) return; // سيُعاد تحميل الصفحة
+        if (result.redirecting) return;
         clearTimeout(t);
         if (result.success) {
           var u = result.user || auth.currentUser;
-          await saveCustomerUser(u);
-          document.getElementById('custForm').classList.add('hidden');
-          btn.classList.add('hidden');
-          document.getElementById('okMsg').classList.remove('hidden');
+          var c = await saveCustomerUser(u);
+          showProfile(c || { fullName: u.displayName, email: u.email, photoURL: u.photoURL });
           return;
         }
         alert(result.error || 'فشل');
@@ -158,24 +198,44 @@
       resetGoogleBtn();
     }
 
-    // بعد العودة من Google redirect
-    (async function() {
+    async function logoutCustomer() {
+      try {
+        var c = null;
+        try { c = JSON.parse(sessionStorage.getItem('souqi_customer') || 'null'); } catch (e) {}
+        var uid = (c && c.id) || (auth.currentUser && auth.currentUser.uid);
+        var email = (c && c.email) || (auth.currentUser && auth.currentUser.email);
+        if (typeof deleteCustomer === 'function') await deleteCustomer(uid, email);
+      } catch (e) {}
+      try { sessionStorage.removeItem('souqi_customer'); } catch (e2) {}
+      try { await auth.signOut(); } catch (e3) {}
+      showLogin();
+    }
+
+    // استعادة جلسة + redirect Google
+    (async function init() {
       try {
         var r = await handleGoogleRedirectResult();
         if (r && r.success) {
           var u = r.user || auth.currentUser;
           if (u) {
-            await saveCustomerUser(u);
-            document.getElementById('custForm').classList.add('hidden');
-            var btn = document.getElementById('googleBtn');
-            if (btn) btn.classList.add('hidden');
-            document.getElementById('okMsg').classList.remove('hidden');
+            var c = await saveCustomerUser(u);
+            showProfile(c || { fullName: u.displayName, email: u.email, photoURL: u.photoURL });
+            return;
           }
         }
       } catch (e) {}
+      try {
+        var cached = JSON.parse(sessionStorage.getItem('souqi_customer') || 'null');
+        if (cached && cached.id) { showProfile(cached); }
+      } catch (e2) {}
+      auth.onAuthStateChanged(async function(user) {
+        if (user) {
+          var c = await saveCustomerUser(user);
+          showProfile(c || { fullName: user.displayName, email: user.email, photoURL: user.photoURL });
+        }
+      });
       resetGoogleBtn();
     })();
   </script>
-
 </body>
 </html>

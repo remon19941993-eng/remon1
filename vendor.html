@@ -174,6 +174,7 @@
         <div class="vendor-tabs">
           <button type="button" class="active" id="tabPublish" onclick="showTab('publish')">نشر منتج</button>
           <button type="button" id="tabMine" onclick="showTab('mine')">منتجاتي</button>
+          <button type="button" id="tabProfile" onclick="showTab('profile')">حسابي</button>
         </div>
 
         <div id="panelPublish">
@@ -214,6 +215,18 @@
 
         <div id="panelMine" class="hidden">
           <div id="myProductsList"><p style="text-align:center;color:#888;">جاري التحميل...</p></div>
+        </div>
+
+        <div id="panelProfile" class="hidden" style="text-align:center;">
+          <div id="vProfAvatar" style="width:80px;height:80px;border-radius:50%;background:#f0f0f0;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;">🏪</div>
+          <h3 id="vProfName">—</h3>
+          <p style="color:#666;font-size:13px;" id="vProfEmail" dir="ltr">—</p>
+          <div style="text-align:right;background:#fafafa;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;">
+            <div style="display:flex;justify-content:space-between;margin:6px 0;"><span style="color:#888;">المتجر</span><strong id="vProfShop">—</strong></div>
+            <div style="display:flex;justify-content:space-between;margin:6px 0;"><span style="color:#888;">الهاتف</span><strong id="vProfPhone" dir="ltr">—</strong></div>
+            <div style="display:flex;justify-content:space-between;margin:6px 0;"><span style="color:#888;">الحالة</span><strong id="vProfStatus">—</strong></div>
+          </div>
+          <p style="font-size:12px;color:#999;">عند تسجيل الخروج يُمسح حسابك من قائمة الأدمن تلقائياً</p>
         </div>
 
         <button class="btn btn-outline full" onclick="logoutVendor()" style="margin-top:20px;">تسجيل خروج</button>
@@ -264,9 +277,24 @@
     function showTab(name) {
       document.getElementById('tabPublish').classList.toggle('active', name === 'publish');
       document.getElementById('tabMine').classList.toggle('active', name === 'mine');
+      var tp = document.getElementById('tabProfile');
+      if (tp) tp.classList.toggle('active', name === 'profile');
       document.getElementById('panelPublish').classList.toggle('hidden', name !== 'publish');
       document.getElementById('panelMine').classList.toggle('hidden', name !== 'mine');
+      var pp = document.getElementById('panelProfile');
+      if (pp) pp.classList.toggle('hidden', name !== 'profile');
       if (name === 'mine') loadMyProducts();
+      if (name === 'profile' && currentVendor) {
+        document.getElementById('vProfName').textContent = currentVendor.fullName || currentVendor.shopName || 'تاجر';
+        document.getElementById('vProfEmail').textContent = currentVendor.email || '';
+        document.getElementById('vProfShop').textContent = currentVendor.shopName || '—';
+        document.getElementById('vProfPhone').textContent = currentVendor.phone || '—';
+        document.getElementById('vProfStatus').textContent = currentVendor.status === 'active' ? 'مفعّل' : (currentVendor.status === 'trial' ? 'تجريبي' : 'متوقف');
+        var av = document.getElementById('vProfAvatar');
+        if (auth.currentUser && auth.currentUser.photoURL) {
+          av.innerHTML = '<img src="' + auth.currentUser.photoURL + '" style="width:100%;height:100%;object-fit:cover;">';
+        }
+      }
     }
 
     async function handleVendorLogin(e) {
@@ -430,8 +458,19 @@
       loadMyProducts();
     }
 
-    function logoutVendor() {
-      auth.signOut().then(function() { currentVendor = null; try{sessionStorage.removeItem('souqi_vendor');}catch(e){} showLogin(); });
+    async function logoutVendor() {
+      try {
+        var vid = (currentVendor && currentVendor.id) || (auth.currentUser && auth.currentUser.uid);
+        if (vid && typeof deleteVendor === 'function') {
+          await deleteVendor(vid);
+        }
+      } catch (e) {}
+      try { sessionStorage.removeItem('souqi_vendor'); } catch (e2) {}
+      currentVendor = null;
+      try {
+        await auth.signOut();
+      } catch (e3) {}
+      showLogin();
     }
 
     function vendorFromAuthUser(user) {

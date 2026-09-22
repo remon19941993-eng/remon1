@@ -257,5 +257,25 @@
 
   <script src="js/quiz.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    // إذا كان الزبون مسجلاً على هذا الجهاز، اجعل كل روابط «تسجيل» تفتح حسابه مباشرة.
+    (function(){
+      function updateCustomerLinks(user){
+        var remembered = false;
+        try { remembered = localStorage.getItem('souqi_customer_logged_in') === '1'; } catch(e) {}
+        var isCustomer = !!user && remembered;
+        document.querySelectorAll('a[href="customer.html"]').forEach(function(link){
+          if (isCustomer) {
+            link.textContent = 'حسابي';
+            link.setAttribute('href','customer.html');
+            link.title = 'فتح حسابي';
+          }
+        });
+      }
+      if (typeof auth !== 'undefined') {
+        auth.onAuthStateChanged(updateCustomerLinks);
+      }
+    })();
+  </script>
 </body>
 </html>

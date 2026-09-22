@@ -11,6 +11,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-app.js"></script>
+  <style>
+    .toast-ok {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: #1b5e20; color: #fff; padding: 14px 24px; border-radius: 999px;
+      font-weight: 700; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      display: none;
+    }
+    .toast-ok.show { display: block; }
+  </style>
 </head>
 <body>
   <div class="quran-banner">
@@ -42,8 +51,8 @@
           <h1>تسجيل / اشتراك</h1>
           <p class="subtitle">للزبائن — مجاني بالكامل</p>
         </div>
-        <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleCustomerGoogle()" style="margin-bottom:16px;">التسجيل / الدخول عبر Google</button>
-        <p id="googleStatus" style="text-align:center;color:#888;font-size:13px;min-height:18px;"></p>
+        <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleCustomerGoogle()">التسجيل / الدخول عبر Google</button>
+        <p id="googleStatus" style="text-align:center;color:#888;font-size:13px;margin:10px 0;"></p>
         <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بالبريد وكلمة المرور</p>
         <form id="custForm" onsubmit="handleCustomer(event)">
           <div class="form-group"><label>الاسم</label><input type="text" id="fullName"></div>
@@ -55,8 +64,15 @@
       </div>
     </div>
   </main>
+  <div class="toast-ok" id="toastOk">✓ تم تسجيل الدخول بنجاح</div>
 
   <script>
+    function showSuccessAndHome() {
+      var t = document.getElementById('toastOk');
+      if (t) t.classList.add('show');
+      setTimeout(function() { location.href = 'index.html'; }, 900);
+    }
+
     function resetGoogleBtn() {
       var btn = document.getElementById('googleBtn');
       if (btn) { btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google'; }
@@ -64,18 +80,13 @@
       if (st) st.textContent = '';
     }
 
-    function goHomeAfterLogin() {
-      try { sessionStorage.setItem('souqi_just_logged_in', '1'); } catch (e) {}
-      location.href = 'index.html';
-    }
-
     async function saveCustomerUser(u, extra) {
       if (!u) return null;
       var id = u.uid || u.id;
       if (!id) return null;
       var payload = {
-        fullName: (extra && extra.fullName) || u.displayName || u.fullName || '',
-        email: u.email || (extra && extra.email) || '',
+        fullName: (extra && extra.fullName) || u.displayName || '',
+        email: u.email || '',
         phone: (extra && extra.phone) || '',
         photoURL: u.photoURL || '',
         id: id,
@@ -85,12 +96,18 @@
       try { await db.collection('customers').doc(id).set(payload, { merge: true }); } catch (e) {}
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
-        local = local.filter(function(c) { return c.id !== id && c.email !== payload.email; });
+        local = local.filter(function(c) { return c.id !== id; });
         local.unshift(payload);
         localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
       } catch (e2) {}
       try { sessionStorage.setItem('souqi_customer', JSON.stringify(payload)); } catch (e3) {}
       return payload;
+    }
+
+    async function finishCustomerLogin(user, extra) {
+      await saveCustomerUser(user, extra);
+      try { sessionStorage.removeItem('souqi_pending_customer'); } catch (e) {}
+      showSuccessAndHome();
     }
 
     async function handleCustomer(e) {
@@ -103,21 +120,17 @@
         fullName: document.getElementById('fullName').value.trim(),
         phone: document.getElementById('phone').value.trim()
       };
-      // جرّب الدخول أولاً
       try {
         var login = await auth.signInWithEmailAndPassword(email, pass);
-        await saveCustomerUser(login.user, extra);
-        goHomeAfterLogin();
+        await finishCustomerLogin(login.user, extra);
         return;
       } catch (e1) {}
-      // ثم التسجيل
       var result = await registerCustomer(email, pass, extra);
-      if (result.success) {
-        await saveCustomerUser(auth.currentUser, extra);
-        goHomeAfterLogin();
+      if (result.success && auth.currentUser) {
+        await finishCustomerLogin(auth.currentUser, extra);
         return;
       }
-      alert(result.error || 'فشل');
+      alert(result.error || 'فشل التسجيل');
       btn.disabled = false; btn.textContent = 'تسجيل / دخول';
     }
 
@@ -125,57 +138,87 @@
       var btn = document.getElementById('googleBtn');
       var st = document.getElementById('googleStatus');
       btn.disabled = true;
-      btn.textContent = 'جاري التحويل...';
-      if (st) st.textContent = 'سيفتح Google ثم يعود تلقائياً...';
+      btn.textContent = 'جاري فتح Google...';
+      if (st) st.textContent = 'انتظر لحظة...';
       try {
-        var result = await loginWithGoogle({ asCustomer: true });
-        if (result && result.redirecting) {
-          if (st) st.textContent = 'انتظر فتح Google...';
+        sessionStorage.setItem('souqi_pending_customer', '1');
+        sessionStorage.setItem('souqi_auth_mode', 'customer');
+      } catch (e) {}
+
+      // نفس طريقة التاجر الناجحة: popup أولاً ثم redirect
+      try {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        var result = await auth.signInWithPopup(provider);
+        if (result && result.user) {
+          await finishCustomerLogin(result.user);
           return;
         }
-        if (result && result.success) {
-          var u = result.user || auth.currentUser;
-          await saveCustomerUser(u);
-          goHomeAfterLogin();
+      } catch (popupErr) {
+        // إن كان المستخدم مسجلاً مسبقاً
+        if (auth.currentUser) {
+          await finishCustomerLogin(auth.currentUser);
           return;
         }
-        alert((result && result.error) || 'فشل Google');
-      } catch (e) {
-        alert(e.message || 'فشل Google');
+        // redirect كخطة بديلة
+        try {
+          var provider2 = new firebase.auth.GoogleAuthProvider();
+          provider2.setCustomParameters({ prompt: 'select_account' });
+          if (st) st.textContent = 'جاري التحويل إلى Google...';
+          await auth.signInWithRedirect(provider2);
+          return;
+        } catch (redirErr) {
+          alert('فشل Google: ' + (redirErr.message || popupErr.message || 'حاول بالبريد'));
+        }
       }
       resetGoogleBtn();
     }
 
-    // عند العودة من Google أو تحديث الصفحة
-    window.addEventListener('pageshow', resetGoogleBtn);
+    // عند العودة من redirect
+    (async function onReturn() {
+      var pending = false;
+      try { pending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
 
-    (async function init() {
-      resetGoogleBtn();
       try {
-        var r = await handleGoogleRedirectResult();
-        if (r && r.success) {
-          var u = r.user || auth.currentUser;
-          if (u) {
-            await saveCustomerUser(u);
-            goHomeAfterLogin();
-            return;
-          }
+        var result = await auth.getRedirectResult();
+        if (result && result.user) {
+          await finishCustomerLogin(result.user);
+          return;
         }
       } catch (e) {}
-      // إن كان مسجلاً مسبقاً → الرئيسية
-      if (auth.currentUser) {
-        try {
-          var mode = sessionStorage.getItem('souqi_auth_mode');
-          if (mode !== 'vendor') {
-            await saveCustomerUser(auth.currentUser);
-            // لا نحوّل تلقائياً إن فتح الصفحة عمداً — فقط بعد redirect
-          }
-        } catch (e2) {}
+
+      // إن وُجدت جلسة بعد محاولة Google
+      if (pending && auth.currentUser) {
+        await finishCustomerLogin(auth.currentUser);
+        return;
       }
-      auth.onAuthStateChanged(function(user) {
-        // لا شيء إضافي
+
+      // راقب تغيّر الحالة بعد redirect
+      var unsub = auth.onAuthStateChanged(async function(user) {
+        if (user) {
+          var stillPending = false;
+          try { stillPending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
+          if (stillPending) {
+            try { unsub(); } catch (e2) {}
+            await finishCustomerLogin(user);
+          }
+        }
       });
+
+      // إعادة الزر إن لم يكتمل
+      setTimeout(function() {
+        var still = false;
+        try { still = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
+        if (still && !auth.currentUser) {
+          try { sessionStorage.removeItem('souqi_pending_customer'); } catch (e2) {}
+          resetGoogleBtn();
+        }
+      }, 15000);
     })();
+
+    window.addEventListener('pageshow', function() {
+      if (!auth.currentUser) resetGoogleBtn();
+    });
   </script>
 </body>
 </html>

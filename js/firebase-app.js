@@ -168,7 +168,10 @@ async function handleGoogleRedirectResult() {
     var result = await auth.getRedirectResult();
     if (result && result.user) {
       var mode = "vendor";
-      try { mode = sessionStorage.getItem("souqi_auth_mode") || "vendor"; sessionStorage.removeItem("souqi_auth_mode"); } catch (e) {}
+      try {
+        mode = sessionStorage.getItem("souqi_auth_mode") || "vendor";
+      } catch (e) {}
+      try { sessionStorage.removeItem("souqi_auth_mode"); } catch (e2) {}
       if (mode === "customer") {
         return { success: true, user: result.user, asCustomer: true };
       }
@@ -176,11 +179,14 @@ async function handleGoogleRedirectResult() {
         fullName: result.user.displayName || "",
         shopName: result.user.displayName || "متجري"
       });
-      return { success: true, vendor: vendor };
+      return { success: true, vendor: vendor, user: result.user };
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn("redirect result", e);
+  }
   return null;
 }
+
 
 async function getCurrentVendor() {
   var user = auth.currentUser;

@@ -86,7 +86,31 @@
       </div>
     </div>
   </main>
-  <script>
+    <script>
+    function resetGoogleBtn() {
+      var btn = document.getElementById('googleBtn');
+      if (btn) { btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google'; }
+    }
+
+    async function saveCustomerUser(u) {
+      if (!u || !u.uid && !u.id) return;
+      var id = u.uid || u.id;
+      var payload = {
+        fullName: u.displayName || u.fullName || '',
+        email: u.email || '',
+        id: id,
+        createdAt: new Date().toISOString(),
+        type: 'customer'
+      };
+      try { await db.collection('customers').doc(id).set(payload, { merge: true }); } catch (e) {}
+      try {
+        var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
+        local = local.filter(function(c) { return c.id !== id && c.email !== payload.email; });
+        local.unshift(payload);
+        localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
+      } catch (e2) {}
+    }
+
     async function handleCustomer(e) {
       e.preventDefault();
       var btn = document.getElementById('custBtn');
@@ -108,34 +132,19 @@
         btn.disabled = false; btn.textContent = 'تسجيل';
       }
     }
+
     async function handleCustomerGoogle() {
       var btn = document.getElementById('googleBtn');
       btn.disabled = true; btn.textContent = 'جاري الاتصال...';
+      // إعادة الزر إن لم يكتمل خلال 25 ثانية
+      var t = setTimeout(resetGoogleBtn, 25000);
       try {
-        var result = await loginWithGoogle();
-        if (result.redirecting) return;
-        if (result.success || (typeof auth !== 'undefined' && auth.currentUser)) {
-          var u = (result.vendor && result.vendor) || (auth.currentUser ? {
-            id: auth.currentUser.uid,
-            email: auth.currentUser.email,
-            fullName: auth.currentUser.displayName || ''
-          } : null);
-          if (u && u.id) {
-            var payload = {
-              fullName: u.fullName || u.shopName || '',
-              email: u.email || '',
-              id: u.id,
-              createdAt: new Date().toISOString(),
-              type: 'customer'
-            };
-            try { await db.collection('customers').doc(u.id).set(payload, { merge: true }); } catch (e) {}
-            try {
-              var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
-              local = local.filter(function(c) { return c.id !== u.id && c.email !== payload.email; });
-              local.unshift(payload);
-              localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
-            } catch (e2) {}
-          }
+        var result = await loginWithGoogle({ asCustomer: true });
+        if (result.redirecting) return; // سيُعاد تحميل الصفحة
+        clearTimeout(t);
+        if (result.success) {
+          var u = result.user || auth.currentUser;
+          await saveCustomerUser(u);
           document.getElementById('custForm').classList.add('hidden');
           btn.classList.add('hidden');
           document.getElementById('okMsg').classList.remove('hidden');
@@ -143,10 +152,30 @@
         }
         alert(result.error || 'فشل');
       } catch (e) {
+        clearTimeout(t);
         alert(e.message || 'فشل Google');
       }
-      btn.disabled = false; btn.textContent = 'التسجيل / الدخول عبر Google';
+      resetGoogleBtn();
     }
+
+    // بعد العودة من Google redirect
+    (async function() {
+      try {
+        var r = await handleGoogleRedirectResult();
+        if (r && r.success) {
+          var u = r.user || auth.currentUser;
+          if (u) {
+            await saveCustomerUser(u);
+            document.getElementById('custForm').classList.add('hidden');
+            var btn = document.getElementById('googleBtn');
+            if (btn) btn.classList.add('hidden');
+            document.getElementById('okMsg').classList.remove('hidden');
+          }
+        }
+      } catch (e) {}
+      resetGoogleBtn();
+    })();
   </script>
+
 </body>
 </html>

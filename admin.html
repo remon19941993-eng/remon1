@@ -208,6 +208,7 @@
 
   <script>
     var vendorsCache = [];
+    var customersCache = [];
     var productsCache = [];
 
     function toast(msg) {
@@ -291,6 +292,7 @@
               '<button type="button" class="btn-act btn-stop" ' + (!st.isOn && !st.isTrial ? 'disabled' : '') + ' onclick="deactivateVendor(' + i + ')">' +
                 (!st.isOn && !st.isTrial ? '⏹ متوقف' : 'إيقاف الاشتراك') +
               '</button>' +
+              '<button type="button" class="btn-del" onclick="adminDeleteVendor(' + i + ')">🗑 مسح التاجر</button>' +
             '</div>' +
           '</div>'
         );
@@ -338,7 +340,8 @@
         box.innerHTML = '<p style="color:#888;text-align:center;padding:20px;">لا زبائن مسجّلين بعد.<br>يظهر هنا كل من سجّل من صفحة «تسجيل».</p>';
         return;
       }
-      box.innerHTML = list.map(function(c) {
+      customersCache = list;
+      box.innerHTML = list.map(function(c, i) {
         return (
           '<div class="c-row">' +
             '<div style="flex:1;">' +
@@ -346,6 +349,7 @@
               '<span style="font-size:13px;color:#555;" dir="ltr">' + (c.email || '-') + '</span><br>' +
               '<small style="color:#888;" dir="ltr">' + (c.phone || '') + ' · ' + String(c.createdAt || '').slice(0, 19) + '</small>' +
             '</div>' +
+            '<button type="button" class="btn-del" onclick="adminDeleteCustomer(' + i + ')">🗑 مسح</button>' +
           '</div>'
         );
       }).join('');

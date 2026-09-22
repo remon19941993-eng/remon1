@@ -123,17 +123,22 @@ async function loginMerchant(email, password) {
   }
 }
 
-async function loginWithGoogle() {
+async function loginWithGoogle(opts) {
+  opts = opts || {};
+  var asCustomer = !!opts.asCustomer;
   try {
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    // على الجوال: redirect أسلس — بدون نافذة سوداء
     var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     if (isMobile) {
+      try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e) {}
       await auth.signInWithRedirect(provider);
       return { success: true, redirecting: true };
     }
     var result = await auth.signInWithPopup(provider);
+    if (asCustomer) {
+      return { success: true, user: result.user };
+    }
     var vendor = await ensureVendorDoc(result.user, {
       fullName: result.user.displayName || "",
       shopName: result.user.displayName || "متجري"
@@ -141,11 +146,12 @@ async function loginWithGoogle() {
     return { success: true, vendor: vendor };
   } catch (e) {
     if (auth.currentUser) {
+      if (asCustomer) return { success: true, user: auth.currentUser };
       return { success: true, vendor: vendorFromUser(auth.currentUser, {}) };
     }
-    // إن فشل popup جرّب redirect
     try {
       var provider2 = new firebase.auth.GoogleAuthProvider();
+      try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e0) {}
       await auth.signInWithRedirect(provider2);
       return { success: true, redirecting: true };
     } catch (e2) {
@@ -158,6 +164,11 @@ async function handleGoogleRedirectResult() {
   try {
     var result = await auth.getRedirectResult();
     if (result && result.user) {
+      var mode = "vendor";
+      try { mode = sessionStorage.getItem("souqi_auth_mode") || "vendor"; sessionStorage.removeItem("souqi_auth_mode"); } catch (e) {}
+      if (mode === "customer") {
+        return { success: true, user: result.user, asCustomer: true };
+      }
       var vendor = await ensureVendorDoc(result.user, {
         fullName: result.user.displayName || "",
         shopName: result.user.displayName || "متجري"
@@ -324,6 +335,45 @@ async function registerCustomer(email, password, data) {
 }
 
 // لا نضيف «لوحة التاجر» للشريط العلوي — فقط داخل vendor.html
+
+async function deleteVendor(vendorId) {
+  if (!vendorId) return { success: false };
+  try { await db.collection("vendors").doc(vendorId).delete(); } catch (e) {}
+  try {
+    var local = getLocalVendors().filter(function(v) { return v.id !== vendorId; });
+    localStorage.setItem("local_vendors", JSON.stringify(local));
+  } catch (e2) {}
+  // مسح منتجات التاجر
+  try {
+    var prods = JSON.parse(localStorage.getItem("local_products") || "[]");
+    prods = prods.filter(function(p) { return p.vendorId !== vendorId; });
+    localStorage.setItem("local_products", JSON.stringify(prods));
+  } catch (e3) {}
+  try {
+    var snap = await db.collection("products").where("vendorId", "==", vendorId).get();
+    var batch = db.batch();
+    snap.docs.forEach(function(d) { batch.delete(d.ref); });
+    if (snap.docs.length) await batch.commit();
+  } catch (e4) {}
+  return { success: true };
+}
+
+async function deleteCustomer(customerId, email) {
+  try {
+    if (customerId) await db.collection("customers").doc(customerId).delete();
+  } catch (e) {}
+  try {
+    var local = JSON.parse(localStorage.getItem("local_customers") || "[]");
+    local = local.filter(function(c) {
+      if (customerId && c.id === customerId) return false;
+      if (email && c.email === email) return false;
+      return true;
+    });
+    localStorage.setItem("local_customers", JSON.stringify(local));
+  } catch (e2) {}
+  return { success: true };
+}
+
 async function updateNavForVendor() {
   try {
     document.querySelectorAll(".vendor-publish-link").forEach(function(el) { el.remove(); });

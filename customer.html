@@ -205,6 +205,31 @@
       document.getElementById('googlePasswordNote').classList.toggle('hidden', !isGoogle);
     }
 
+    var customerStatusUnsub = null;
+
+    function watchCustomerAdminStatus(user) {
+      if (!user || typeof db === 'undefined') return;
+      try {
+        if (customerStatusUnsub) customerStatusUnsub();
+        customerStatusUnsub = db.collection('customers').doc(user.uid).onSnapshot(async function(snap) {
+          if (!snap.exists) return;
+          var data = snap.data() || {};
+          if (data.status === 'blocked') {
+            try { await auth.signOut(); } catch (e) {}
+            try {
+              sessionStorage.removeItem('souqi_customer');
+              sessionStorage.removeItem('souqi_pending_customer');
+              sessionStorage.removeItem('souqi_auth_mode');
+            } catch (e2) {}
+            alert('تم إيقاف هذا الحساب من إدارة الموقع.');
+            window.location.replace('index.html');
+          }
+        }, function(err) {
+          console.warn('Customer status watcher:', err);
+        });
+      } catch (e) {}
+    }
+
     function showCustomerTab(name) {
       ['account','edit','password'].forEach(function(n){
         document.getElementById('panel' + n.charAt(0).toUpperCase() + n.slice(1)).classList.toggle('hidden', n !== name);
@@ -260,6 +285,7 @@
       var profile = customerProfile(user);
       if (extra) profile = Object.assign(profile, extra);
       renderCustomer(profile, user);
+      watchCustomerAdminStatus(user);
       finishing = false;
 
       // ابدأ بالحفظ فوراً حتى يظهر العميل في لوحة الأدمن دون انتظار قراءة Firestore.
@@ -487,6 +513,8 @@
       } catch(e2) {}
       currentCustomer=null;
       finishing=false;
+      try { if (customerStatusUnsub) customerStatusUnsub(); } catch(e3) {}
+      customerStatusUnsub = null;
       // بعد تسجيل الخروج نذهب مباشرة للرئيسية حتى لا تتكرر صفحات الرجوع.
       window.location.replace('index.html');
     }

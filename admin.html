@@ -341,10 +341,12 @@
         list = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
       } catch (e) {
         console.error('Admin customers Firestore error:', e);
-        box.innerHTML = '<p style="color:#c62828;text-align:center;padding:20px;">تعذر قراءة قائمة الزبائن من Firebase.<br><small>' +
-          ((e && e.code) ? e.code : (e && e.message ? e.message : 'خطأ غير معروف')) +
-          '</small></p>';
-        return;
+        // لا نوقف العرض هنا: إذا كان الزبون مسجلاً من نفس الجهاز،
+        // يوجد نسخة محلية ويمكن للأدمن رؤيتها حتى لو كانت صلاحية Firestore مرفوضة.
+        try {
+          var localFallback = JSON.parse(localStorage.getItem('local_customers') || '[]');
+          list = localFallback.slice();
+        } catch (localErr) {}
       }
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');

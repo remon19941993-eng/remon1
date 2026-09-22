@@ -13,5 +13,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// إبقاء الجلسة بعد التحديث / إغلاق التبويب
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function() {});
+// انتظر اكتمال إعداد جلسة Firebase قبل أي تسجيل دخول/Google redirect.
+const firebasePersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// إبقاء الجلسة بعد التحديث / إغلاق التبويب (يتم ذلك عبر firebasePersistenceReady أعلاه).

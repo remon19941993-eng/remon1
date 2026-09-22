@@ -306,6 +306,23 @@
 
         var provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({prompt:'select_account'});
+
+        // في الهاتف نعالج النتيجة مباشرة عبر popup أولاً، حتى لا تضيع نتيجة redirect.
+        try {
+          if (window.firebasePersistenceReady) await window.firebasePersistenceReady;
+          var popupResult = await auth.signInWithPopup(provider);
+          if (popupResult && popupResult.user) {
+            await finishCustomerLogin(popupResult.user);
+            return;
+          }
+        } catch (popupError) {
+          console.warn('Google popup:', popupError);
+          // إذا منع المتصفح النافذة أو كانت العملية غير مدعومة، نستخدم redirect كاحتياط.
+          if (popupError && !['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(popupError.code)) {
+            throw popupError;
+          }
+        }
+
         await auth.signInWithRedirect(provider);
       } catch (e) {
         console.error(e);
@@ -317,6 +334,7 @@
 
     async function handleGoogleReturn() {
       try {
+        if (window.firebasePersistenceReady) await window.firebasePersistenceReady;
         var result = await auth.getRedirectResult();
         if (result && result.user) {
           try { sessionStorage.removeItem('souqi_pending_customer'); sessionStorage.removeItem('souqi_auth_mode'); } catch(e){}
@@ -421,6 +439,13 @@
     }
 
     (async function bootstrap() {
+      // انتظر تهيئة persistence أولاً حتى لا تضيع نتيجة Google بعد العودة من accounts.google.com.
+      try {
+        if (window.firebasePersistenceReady) await window.firebasePersistenceReady;
+      } catch (e) {
+        console.warn('Firebase persistence:', e);
+      }
+
       // لا نعتبر auth.currentUser الموجود من التاجر دخولاً للزبون.
       var customerSession=false;
       try { customerSession=sessionStorage.getItem('souqi_customer')==='1'; } catch(e) {}

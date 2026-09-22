@@ -248,10 +248,23 @@
         sessionStorage.removeItem('souqi_pending_customer');
         sessionStorage.setItem('souqi_customer', '1');
       } catch (e) {}
-      var profile = await loadCustomerProfile(user);
-      if (extra) profile = Object.assign(profile, extra);
-      renderCustomer(profile, user);
-      finishing = false;
+
+      try {
+        // حفظ حساب الزبون في Firestore فور نجاح Google/البريد.
+        // هذا هو السجل الذي يقرأه الأدمن، وليس مجرد localStorage.
+        var profile = await loadCustomerProfile(user);
+        if (extra) profile = Object.assign(profile, extra);
+        var saved = await saveCustomerUser(user, profile);
+        if (saved) profile = Object.assign(profile, saved);
+        renderCustomer(profile, user);
+      } catch (err) {
+        console.error('finishCustomerLogin:', err);
+        var fallback = customerProfile(user);
+        if (extra) fallback = Object.assign(fallback, extra);
+        renderCustomer(fallback, user);
+      } finally {
+        finishing = false;
+      }
     }
 
     async function handleCustomer(e) {

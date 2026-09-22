@@ -114,7 +114,28 @@
       try {
         var result = await loginWithGoogle();
         if (result.redirecting) return;
-        if (result.success) {
+        if (result.success || (typeof auth !== 'undefined' && auth.currentUser)) {
+          var u = (result.vendor && result.vendor) || (auth.currentUser ? {
+            id: auth.currentUser.uid,
+            email: auth.currentUser.email,
+            fullName: auth.currentUser.displayName || ''
+          } : null);
+          if (u && u.id) {
+            var payload = {
+              fullName: u.fullName || u.shopName || '',
+              email: u.email || '',
+              id: u.id,
+              createdAt: new Date().toISOString(),
+              type: 'customer'
+            };
+            try { await db.collection('customers').doc(u.id).set(payload, { merge: true }); } catch (e) {}
+            try {
+              var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
+              local = local.filter(function(c) { return c.id !== u.id && c.email !== payload.email; });
+              local.unshift(payload);
+              localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
+            } catch (e2) {}
+          }
           document.getElementById('custForm').classList.add('hidden');
           btn.classList.add('hidden');
           document.getElementById('okMsg').classList.remove('hidden');

@@ -214,7 +214,7 @@
     }
 
     async function saveCustomerUser(u, extra) {
-      if (!u) return null;
+      if (!u) return { payload:null, saved:false, error:null };
       var id = u.uid;
       var payload = {
         fullName: (extra && extra.fullName) || u.displayName || '',
@@ -222,23 +222,29 @@
         phone: (extra && extra.phone) || '',
         photoURL: (extra && extra.photoURL) || u.photoURL || '',
         id: id,
-        createdAt: new Date().toISOString(),
+        createdAt: (extra && extra.createdAt) || new Date().toISOString(),
         type: 'customer',
-        provider: (u.providerData && u.providerData[0] && u.providerData[0].providerId === 'google.com') ? 'Google' : 'البريد وكلمة المرور'
+        provider: (u.providerData && u.providerData[0] && u.providerData[0].providerId === 'google.com') ? 'Google' : 'البريد وكلمة المرور',
+        status: (extra && extra.status) || 'active'
       };
+      var saved = false, error = null;
       try {
         await Promise.race([
           db.collection('customers').doc(id).set(payload, {merge:true}),
           new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('Firestore timeout')); }, 5000); })
         ]);
-      } catch (e) { console.warn('Customer profile save:', e); }
+        saved = true;
+      } catch (e) {
+        error = e;
+        console.error('Customer Firestore save failed:', e);
+      }
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
         local = local.filter(function(c){ return c.id !== id; });
         local.unshift(payload);
         localStorage.setItem('local_customers', JSON.stringify(local.slice(0,200)));
       } catch (e2) {}
-      return payload;
+      return { payload:payload, saved:saved, error:error };
     }
 
     async function finishCustomerLogin(user, extra) {
@@ -249,22 +255,34 @@
         sessionStorage.setItem('souqi_customer', '1');
       } catch (e) {}
 
-      try {
-        // حفظ حساب الزبون في Firestore فور نجاح Google/البريد.
-        // هذا هو السجل الذي يقرأه الأدمن، وليس مجرد localStorage.
-        var profile = await loadCustomerProfile(user);
-        if (extra) profile = Object.assign(profile, extra);
-        var saved = await saveCustomerUser(user, profile);
-        if (saved) profile = Object.assign(profile, saved);
-        renderCustomer(profile, user);
-      } catch (err) {
-        console.error('finishCustomerLogin:', err);
-        var fallback = customerProfile(user);
-        if (extra) fallback = Object.assign(fallback, extra);
-        renderCustomer(fallback, user);
-      } finally {
-        finishing = false;
-      }
+      // مهم: لا ننتظر Firestore قبل عرض الصفحة.
+      // Google Auth نجح بالفعل، لذلك نعرض الحساب فوراً ثم نزامن سجل العميل بالخلفية.
+      var profile = customerProfile(user);
+      if (extra) profile = Object.assign(profile, extra);
+      renderCustomer(profile, user);
+      finishing = false;
+
+      // قراءة بيانات العميل القديمة (الهاتف/الصورة/البيانات) ثم حفظها بالخلفية.
+      // هذا يمنع تأخير 4-10 ثوانٍ عند فتح صفحة الحساب.
+      (async function syncCustomerInBackground() {
+        try {
+          var existing = await loadCustomerProfile(user);
+          if (existing) {
+            var merged = Object.assign({}, existing, profile, { id:user.uid, email:user.email || existing.email || '' });
+            currentCustomer = merged;
+            renderCustomer(merged, user);
+            profile = merged;
+          }
+          var result = await saveCustomerUser(user, profile);
+          if (!result.saved) {
+            console.error('تعذر حفظ العميل في Firestore:', result.error);
+            var st = document.getElementById('googleStatus');
+            if (st) st.textContent = 'تم تسجيل الدخول، لكن تعذر مزامنة الحساب مع لوحة الأدمن.';
+          }
+        } catch (err) {
+          console.error('Customer background sync:', err);
+        }
+      })();
     }
 
     async function handleCustomer(e) {
@@ -457,9 +475,8 @@
       } catch(e2) {}
       currentCustomer=null;
       finishing=false;
-      document.getElementById('accountBox').classList.add('hidden');
-      document.getElementById('loginBox').classList.remove('hidden');
-      resetGoogleBtn();
+      // بعد تسجيل الخروج نذهب مباشرة للرئيسية حتى لا تتكرر صفحات الرجوع.
+      window.location.replace('index.html');
     }
 
     (async function bootstrap() {

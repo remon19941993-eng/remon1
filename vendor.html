@@ -514,14 +514,51 @@
     })();
 
     var authReady = false;
+    
+    // إذا مسح الأدمن التاجر → خروج فوري من اللوحة
+    function watchVendorDeleted() {
+      if (!auth.currentUser) return;
+      var uid = auth.currentUser.uid;
+      try {
+        db.collection('vendors').doc(uid).onSnapshot(function(snap) {
+          if (!snap.exists) {
+            // محذوف من الأدمن
+            currentVendor = null;
+            try { sessionStorage.removeItem('souqi_vendor'); } catch (e) {}
+            try {
+              var local = JSON.parse(localStorage.getItem('local_vendors') || '[]');
+              local = local.filter(function(v) { return v.id !== uid; });
+              localStorage.setItem('local_vendors', JSON.stringify(local));
+            } catch (e2) {}
+            auth.signOut().then(function() { showLogin(); });
+          }
+        }, function(err) {});
+      } catch (e) {}
+      // فحص دوري محلي أيضاً
+      setInterval(async function() {
+        if (!auth.currentUser) return;
+        try {
+          var doc = await db.collection('vendors').doc(auth.currentUser.uid).get();
+          if (doc && !doc.exists) {
+            currentVendor = null;
+            try { sessionStorage.removeItem('souqi_vendor'); } catch (e) {}
+            await auth.signOut();
+            showLogin();
+          }
+        } catch (e2) {}
+      }, 8000);
+    }
+
     auth.onAuthStateChanged(async function(user) {
       authReady = true;
       if (user) {
         try {
           var v = await getCurrentVendor();
           openPanel(v || vendorFromAuthUser(user));
+          watchVendorDeleted();
         } catch (e) {
           openPanel(vendorFromAuthUser(user));
+          watchVendorDeleted();
         }
       } else {
         // لا تسجّل خروج فوري — انتظر لحظة (يمنع وميض تسجيل الدخول عند التنقل)

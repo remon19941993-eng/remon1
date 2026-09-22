@@ -15,8 +15,7 @@
     .toast-ok {
       position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
       background: #1b5e20; color: #fff; padding: 14px 24px; border-radius: 999px;
-      font-weight: 700; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      display: none;
+      font-weight: 700; z-index: 9999; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
     .toast-ok.show { display: block; }
   </style>
@@ -67,10 +66,14 @@
   <div class="toast-ok" id="toastOk">✓ تم تسجيل الدخول بنجاح</div>
 
   <script>
+    var finishing = false;
+
     function showSuccessAndHome() {
+      if (finishing) return;
+      finishing = true;
       var t = document.getElementById('toastOk');
       if (t) t.classList.add('show');
-      setTimeout(function() { location.href = 'index.html'; }, 900);
+      setTimeout(function() { location.replace('index.html'); }, 800);
     }
 
     function resetGoogleBtn() {
@@ -100,13 +103,16 @@
         local.unshift(payload);
         localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
       } catch (e2) {}
-      try { sessionStorage.setItem('souqi_customer', JSON.stringify(payload)); } catch (e3) {}
       return payload;
     }
 
     async function finishCustomerLogin(user, extra) {
+      if (!user || finishing) return;
       await saveCustomerUser(user, extra);
-      try { sessionStorage.removeItem('souqi_pending_customer'); } catch (e) {}
+      try {
+        sessionStorage.removeItem('souqi_pending_customer');
+        sessionStorage.setItem('souqi_customer', '1');
+      } catch (e) {}
       showSuccessAndHome();
     }
 
@@ -130,7 +136,7 @@
         await finishCustomerLogin(auth.currentUser, extra);
         return;
       }
-      alert(result.error || 'فشل التسجيل');
+      alert(result.error || 'فشل');
       btn.disabled = false; btn.textContent = 'تسجيل / دخول';
     }
 
@@ -138,87 +144,76 @@
       var btn = document.getElementById('googleBtn');
       var st = document.getElementById('googleStatus');
       btn.disabled = true;
-      btn.textContent = 'جاري فتح Google...';
-      if (st) st.textContent = 'انتظر لحظة...';
+      btn.textContent = 'جاري التحويل...';
+      if (st) st.textContent = 'سيفتح Google الآن...';
       try {
         sessionStorage.setItem('souqi_pending_customer', '1');
         sessionStorage.setItem('souqi_auth_mode', 'customer');
       } catch (e) {}
 
-      // نفس طريقة التاجر الناجحة: popup أولاً ثم redirect
+      // إن كان مسجلاً مسبقاً (مثلاً كتاجر) — سجّله كزبون وأكمل
+      if (auth.currentUser) {
+        await finishCustomerLogin(auth.currentUser);
+        return;
+      }
+
       try {
         var provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        var result = await auth.signInWithPopup(provider);
-        if (result && result.user) {
-          await finishCustomerLogin(result.user);
-          return;
-        }
-      } catch (popupErr) {
-        // إن كان المستخدم مسجلاً مسبقاً
-        if (auth.currentUser) {
-          await finishCustomerLogin(auth.currentUser);
-          return;
-        }
-        // redirect كخطة بديلة
-        try {
-          var provider2 = new firebase.auth.GoogleAuthProvider();
-          provider2.setCustomParameters({ prompt: 'select_account' });
-          if (st) st.textContent = 'جاري التحويل إلى Google...';
-          await auth.signInWithRedirect(provider2);
-          return;
-        } catch (redirErr) {
-          alert('فشل Google: ' + (redirErr.message || popupErr.message || 'حاول بالبريد'));
-        }
+        // redirect دائماً على هذه الصفحة — لا popup (يعلق على الجوال)
+        await auth.signInWithRedirect(provider);
+      } catch (e) {
+        alert('خطأ: ' + (e.message || e));
+        resetGoogleBtn();
       }
-      resetGoogleBtn();
     }
 
-    // عند العودة من redirect
-    (async function onReturn() {
-      var pending = false;
-      try { pending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
-
+    // معالجة العودة من Google — أول شيء عند تحميل الصفحة
+    (async function bootstrap() {
+      // 1) نتيجة redirect
       try {
-        var result = await auth.getRedirectResult();
-        if (result && result.user) {
-          await finishCustomerLogin(result.user);
+        var res = await auth.getRedirectResult();
+        if (res && res.user) {
+          await finishCustomerLogin(res.user);
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn(e);
+      }
 
-      // إن وُجدت جلسة بعد محاولة Google
+      // 2) جلسة موجودة بعد pending
+      var pending = false;
+      try { pending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
       if (pending && auth.currentUser) {
         await finishCustomerLogin(auth.currentUser);
         return;
       }
 
-      // راقب تغيّر الحالة بعد redirect
-      var unsub = auth.onAuthStateChanged(async function(user) {
-        if (user) {
-          var stillPending = false;
-          try { stillPending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
-          if (stillPending) {
-            try { unsub(); } catch (e2) {}
-            await finishCustomerLogin(user);
-          }
+      // 3) راقب auth
+      auth.onAuthStateChanged(async function(user) {
+        if (!user) {
+          resetGoogleBtn();
+          return;
         }
+        var p = false;
+        try { p = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
+        if (p) await finishCustomerLogin(user);
       });
 
-      // إعادة الزر إن لم يكتمل
+      // 4) أعد الزر بعد 12 ثانية إن لم ينجح
       setTimeout(function() {
-        var still = false;
-        try { still = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
-        if (still && !auth.currentUser) {
-          try { sessionStorage.removeItem('souqi_pending_customer'); } catch (e2) {}
-          resetGoogleBtn();
+        if (!finishing) {
+          try {
+            if (sessionStorage.getItem('souqi_pending_customer') === '1' && !auth.currentUser) {
+              sessionStorage.removeItem('souqi_pending_customer');
+              resetGoogleBtn();
+              var st = document.getElementById('googleStatus');
+              if (st) st.textContent = 'لم يكتمل Google — جرّب مرة أخرى أو استخدم البريد';
+            }
+          } catch (e) {}
         }
-      }, 15000);
+      }, 12000);
     })();
-
-    window.addEventListener('pageshow', function() {
-      if (!auth.currentUser) resetGoogleBtn();
-    });
   </script>
 </body>
 </html>

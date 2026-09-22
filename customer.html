@@ -262,22 +262,34 @@
       renderCustomer(profile, user);
       finishing = false;
 
-      // قراءة بيانات العميل القديمة (الهاتف/الصورة/البيانات) ثم حفظها بالخلفية.
-      // هذا يمنع تأخير 4-10 ثوانٍ عند فتح صفحة الحساب.
+      // ابدأ بالحفظ فوراً حتى يظهر العميل في لوحة الأدمن دون انتظار قراءة Firestore.
+      // بعد ذلك نقرأ البيانات القديمة ونحافظ على الهاتف/الصورة إن كانت موجودة.
       (async function syncCustomerInBackground() {
         try {
-          var existing = await loadCustomerProfile(user);
-          if (existing) {
-            var merged = Object.assign({}, existing, profile, { id:user.uid, email:user.email || existing.email || '' });
-            currentCustomer = merged;
-            renderCustomer(merged, user);
-            profile = merged;
+          var firstSave = await saveCustomerUser(user, profile);
+          if (!firstSave.saved) {
+            console.error('تعذر حفظ العميل في Firestore:', firstSave.error);
+            var st0 = document.getElementById('googleStatus');
+            if (st0) st0.textContent = 'تم تسجيل الدخول، لكن تعذر مزامنة الحساب مع لوحة الأدمن.';
+            return;
           }
-          var result = await saveCustomerUser(user, profile);
-          if (!result.saved) {
-            console.error('تعذر حفظ العميل في Firestore:', result.error);
-            var st = document.getElementById('googleStatus');
-            if (st) st.textContent = 'تم تسجيل الدخول، لكن تعذر مزامنة الحساب مع لوحة الأدمن.';
+
+          try {
+            var existing = await loadCustomerProfile(user);
+            if (existing) {
+              var merged = Object.assign({}, existing, profile, {
+                id:user.uid,
+                email:user.email || existing.email || '',
+                phone: profile.phone || existing.phone || '',
+                photoURL: profile.photoURL || existing.photoURL || ''
+              });
+              currentCustomer = merged;
+              renderCustomer(merged, user);
+              profile = merged;
+              await saveCustomerUser(user, profile);
+            }
+          } catch (readErr) {
+            console.warn('Customer profile refresh:', readErr);
           }
         } catch (err) {
           console.error('Customer background sync:', err);

@@ -342,13 +342,19 @@
       }
       customersCache = list;
       box.innerHTML = list.map(function(c, i) {
+        var status = c.status === 'blocked' ? 'موقوف' : 'نشط';
+        var statusStyle = c.status === 'blocked' ? 'color:#c62828;' : 'color:#1b7f3a;';
         return (
           '<div class="c-row">' +
             '<div style="flex:1;">' +
-              '<strong>' + (c.name || c.fullName || 'زبون') + '</strong><br>' +
+              '<strong>' + (c.name || c.fullName || 'زبون') + '</strong>' +
+              ' <small style="' + statusStyle + '">(' + status + ')</small><br>' +
               '<span style="font-size:13px;color:#555;" dir="ltr">' + (c.email || '-') + '</span><br>' +
               '<small style="color:#888;" dir="ltr">' + (c.phone || '') + ' · ' + String(c.createdAt || '').slice(0, 19) + '</small>' +
             '</div>' +
+            (c.status === 'blocked'
+              ? '<button type="button" class="btn" style="margin-left:6px;" onclick="adminSetCustomerStatus(' + i + ',\'active\')">✓ تفعيل</button>'
+              : '<button type="button" class="btn" style="margin-left:6px;" onclick="adminSetCustomerStatus(' + i + ',\'blocked\')">⛔ إيقاف</button>') +
             '<button type="button" class="btn-del" onclick="adminDeleteCustomer(' + i + ')">🗑 مسح</button>' +
           '</div>'
         );
@@ -410,6 +416,20 @@
       toast('تم مسح «' + name + '»');
       loadVendors();
       try { loadProducts(); } catch (e5) {}
+    }
+
+    async function adminSetCustomerStatus(i, status) {
+      var c = customersCache[i];
+      if (!c || !c.id) return;
+      try {
+        await db.collection('customers').doc(c.id).set({ status: status, updatedAt: new Date().toISOString() }, { merge:true });
+      } catch (e) {
+        toast('تعذر حفظ حالة الزبون في Firebase');
+        return;
+      }
+      c.status = status;
+      toast(status === 'blocked' ? 'تم إيقاف الزبون' : 'تم تفعيل الزبون');
+      loadCustomers();
     }
 
     async function adminDeleteCustomer(i) {

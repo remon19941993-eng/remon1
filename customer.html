@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>حسابي | سوقي</title>
+  <title>حساب الزبون | سوقي</title>
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -12,26 +12,40 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-app.js"></script>
   <style>
-    .toast-ok {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-      background: #1b5e20; color: #fff; padding: 14px 24px; border-radius: 999px;
-      font-weight: 700; z-index: 9999; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    }
-    .toast-ok.show { display: block; }
+    body.customer-page { background:#fff; }
+    .c-panel { background:#fff; border:1px solid #eee; border-radius:20px; padding:28px 22px; box-shadow:0 8px 32px rgba(0,0,0,.04); max-width:480px; margin:24px auto; }
+    .c-panel h1 { font-size:22px; margin:0 0 6px; text-align:center; color:#222; }
+    .c-sub { color:#888; font-size:14px; margin-bottom:18px; text-align:center; }
+    .customer-tabs { display:flex; gap:8px; margin-bottom:20px; background:#f5f5f7; padding:6px; border-radius:14px; }
+    .customer-tabs button { flex:1; border:0; background:transparent; padding:12px 7px; border-radius:10px; font-family:Cairo,sans-serif; font-weight:700; font-size:13px; color:#666; cursor:pointer; }
+    .customer-tabs button.active { background:#fff; color:#1a1a1e; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .c-avatar { width:86px; height:86px; border-radius:50%; background:#f1f1f1; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:38px; }
+    .c-avatar img { width:100%; height:100%; object-fit:cover; }
+    .c-box { background:#fafafa; border-radius:14px; padding:14px; margin:12px 0; }
+    .c-row { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid #eee; font-size:14px; }
+    .c-row:last-child { border-bottom:0; }
+    .c-row span { color:#888; }
+    .hidden { display:none !important; }
+    .toast-ok { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#1b5e20; color:#fff; padding:12px 22px; border-radius:999px; font-weight:700; z-index:9999; display:none; box-shadow:0 8px 24px rgba(0,0,0,.2); }
+    .toast-ok.show { display:block; }
+    .danger-btn { color:#c62828 !important; border-color:#ffcdd2 !important; }
+    .photo-actions { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px; }
+    .photo-actions label, .photo-actions button { font-family:Cairo,sans-serif; font-size:12px; padding:7px 11px; border:1px solid #ddd; border-radius:9px; background:#fff; cursor:pointer; }
   </style>
 </head>
-<body>
+<body class="customer-page">
   <div class="quran-banner">
     <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
     <p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p>
   </div>
+
   <header class="navbar">
     <div class="container nav-content">
       <div class="logo logo-souqi">
-        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24"><rect width="36" height="8" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#fff"/><rect width="36" height="8" y="16" fill="#000"/><g fill="#CE1126"><circle cx="9" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/><circle cx="27" cy="12" r="1.7"/></g></svg>
         <div class="logo-mark" title="سوقي"><span style="font-size:22px;">🦅</span></div>
         <div class="logo-text"><strong class="brand-name">سوقي</strong><small>سوق إلكتروني</small></div>
-        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><g fill="#CE1126"><polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/><polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/><polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/></g></svg>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24"><rect width="36" height="8" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#fff"/><rect width="36" height="8" y="16" fill="#000"/><g fill="#CE1126"><circle cx="9" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/><circle cx="27" cy="12" r="1.7"/></g></svg>
       </div>
       <nav class="nav-links">
         <a href="index.html">الرئيسية</a>
@@ -44,36 +58,83 @@
 
   <main class="join-page">
     <div class="container">
-      <div class="join-card" id="loginBox">
-        <div class="join-header">
-          <div class="join-icon">👤</div>
-          <h1>تسجيل / اشتراك</h1>
-          <p class="subtitle">للزبائن — مجاني بالكامل</p>
-        </div>
+      <div class="c-panel" id="loginBox">
+        <div style="font-size:40px;text-align:center;margin-bottom:8px;">👤</div>
+        <h1>تسجيل / اشتراك</h1>
+        <p class="c-sub">للزبائن — مجاني بالكامل</p>
         <button type="button" class="btn btn-outline full" id="googleBtn" onclick="handleCustomerGoogle()">التسجيل / الدخول عبر Google</button>
         <p id="googleStatus" style="text-align:center;color:#888;font-size:13px;margin:10px 0;"></p>
         <p style="text-align:center;color:#888;font-size:13px;margin-bottom:12px;">أو بالبريد وكلمة المرور</p>
-        <form id="custForm" onsubmit="handleCustomer(event)">
-          <div class="form-group"><label>الاسم</label><input type="text" id="fullName"></div>
-          <div class="form-group"><label>البريد</label><input type="email" id="email" required></div>
-          <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" required minlength="6"></div>
-          <div class="form-group"><label>الهاتف</label><input type="tel" id="phone"></div>
+        <form onsubmit="handleCustomer(event)">
+          <div class="form-group"><label>الاسم</label><input type="text" id="fullName" autocomplete="name"></div>
+          <div class="form-group"><label>البريد</label><input type="email" id="email" autocomplete="email" required></div>
+          <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" autocomplete="current-password" required minlength="6"></div>
+          <div class="form-group"><label>الهاتف</label><input type="tel" id="phone" autocomplete="tel"></div>
           <button type="submit" class="btn btn-primary full" id="custBtn">تسجيل / دخول</button>
         </form>
       </div>
+
+      <div class="c-panel hidden" id="accountBox">
+        <div class="c-avatar" id="cAvatar">👤</div>
+        <h1 id="cWelcome">حسابي</h1>
+        <p class="c-sub" id="cEmail">—</p>
+
+        <div class="customer-tabs">
+          <button class="active" id="tabAccount" onclick="showCustomerTab('account')">حسابي</button>
+          <button id="tabEdit" onclick="showCustomerTab('edit')">تعديل البيانات</button>
+          <button id="tabPassword" onclick="showCustomerTab('password')">كلمة المرور</button>
+        </div>
+
+        <div id="panelAccount">
+          <div class="c-box">
+            <div class="c-row"><span>اسم المستخدم</span><strong id="viewName">—</strong></div>
+            <div class="c-row"><span>البريد</span><strong id="viewEmail" dir="ltr">—</strong></div>
+            <div class="c-row"><span>الهاتف</span><strong id="viewPhone" dir="ltr">—</strong></div>
+            <div class="c-row"><span>طريقة الدخول</span><strong id="viewProvider">—</strong></div>
+          </div>
+          <p style="text-align:center;color:#999;font-size:12px;">يمكنك تعديل اسمك وهاتفك وصورتك من «تعديل البيانات».</p>
+        </div>
+
+        <div id="panelEdit" class="hidden">
+          <form onsubmit="saveProfile(event)">
+            <div class="form-group"><label>اسم المستخدم</label><input id="editName" type="text" required></div>
+            <div class="form-group"><label>رقم الهاتف</label><input id="editPhone" type="tel"></div>
+            <div class="form-group">
+              <label>الصورة الشخصية</label>
+              <input id="profilePhoto" type="file" accept="image/*" style="padding:10px;">
+              <small style="color:#999;">يمكنك اختيار صورة من الهاتف.</small>
+            </div>
+            <button class="btn btn-primary full" id="saveProfileBtn" type="submit">حفظ التعديلات</button>
+          </form>
+        </div>
+
+        <div id="panelPassword" class="hidden">
+          <form onsubmit="changeCustomerPassword(event)">
+            <div class="form-group"><label>كلمة المرور الحالية</label><input id="oldPassword" type="password" autocomplete="current-password" required></div>
+            <div class="form-group"><label>كلمة المرور الجديدة</label><input id="newPassword" type="password" autocomplete="new-password" minlength="6" required></div>
+            <div class="form-group"><label>تأكيد كلمة المرور الجديدة</label><input id="newPassword2" type="password" autocomplete="new-password" minlength="6" required></div>
+            <button class="btn btn-primary full" type="submit" id="passwordBtn">تغيير كلمة المرور</button>
+          </form>
+          <p id="googlePasswordNote" class="hidden" style="text-align:center;color:#888;font-size:12px;margin-top:12px;">هذا الحساب مسجّل عبر Google. استخدم إدارة حساب Google لكلمة المرور.</p>
+        </div>
+
+        <button class="btn btn-outline full danger-btn" onclick="logoutCustomer()" style="margin-top:20px;">تسجيل خروج</button>
+      </div>
     </div>
   </main>
-  <div class="toast-ok" id="toastOk">✓ تم تسجيل الدخول بنجاح</div>
+
+  <div class="toast-ok" id="toastOk">✓ تم حفظ التعديلات</div>
 
   <script>
     var finishing = false;
+    var currentCustomer = null;
 
-    function showSuccessAndHome() {
-      if (finishing) return;
-      finishing = true;
+    function toast(msg) {
       var t = document.getElementById('toastOk');
-      if (t) t.classList.add('show');
-      setTimeout(function() { location.replace('index.html'); }, 800);
+      if (!t) return;
+      t.textContent = '✓ ' + msg;
+      t.classList.add('show');
+      setTimeout(function(){ t.classList.remove('show'); }, 2200);
     }
 
     function resetGoogleBtn() {
@@ -83,53 +144,114 @@
       if (st) st.textContent = '';
     }
 
+    function clearOldCustomerBrowserData() {
+      // تنظيف بقايا تجريبية قديمة من المتصفح فقط، دون حذف حسابات Firebase.
+      try {
+        sessionStorage.removeItem('souqi_pending_customer');
+        sessionStorage.removeItem('souqi_auth_mode');
+        localStorage.removeItem('local_customers');
+      } catch (e) {}
+    }
+
+    function customerProfile(user) {
+      return {
+        id: user.uid,
+        fullName: user.displayName || '',
+        email: user.email || '',
+        phone: '',
+        photoURL: user.photoURL || '',
+        provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') ? 'Google' : 'البريد وكلمة المرور',
+        createdAt: new Date().toISOString(),
+        type: 'customer'
+      };
+    }
+
+    async function loadCustomerProfile(user) {
+      var profile = customerProfile(user);
+      try {
+        var snap = await Promise.race([
+          db.collection('customers').doc(user.uid).get(),
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, 4000); })
+        ]);
+        if (snap && snap.exists) profile = Object.assign(profile, snap.data(), { id:user.uid, email:user.email || snap.data().email || '' });
+      } catch (e) {}
+      try {
+        var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
+        var found = local.find(function(x){ return x.id === user.uid; });
+        if (found) profile = Object.assign(profile, found);
+      } catch (e2) {}
+      return profile;
+    }
+
+    function renderCustomer(profile, user) {
+      currentCustomer = profile;
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('accountBox').classList.remove('hidden');
+      document.getElementById('cWelcome').textContent = profile.fullName || user.displayName || 'حسابي';
+      document.getElementById('cEmail').textContent = user.email || profile.email || '';
+      document.getElementById('viewName').textContent = profile.fullName || '—';
+      document.getElementById('viewEmail').textContent = user.email || profile.email || '—';
+      document.getElementById('viewPhone').textContent = profile.phone || '—';
+      document.getElementById('viewProvider').textContent = profile.provider || '—';
+      document.getElementById('editName').value = profile.fullName || user.displayName || '';
+      document.getElementById('editPhone').value = profile.phone || '';
+
+      var av = document.getElementById('cAvatar');
+      var photo = profile.photoURL || user.photoURL;
+      av.innerHTML = photo ? '<img src="' + photo + '" alt="الصورة الشخصية">' : '👤';
+
+      var isGoogle = !!(user.providerData || []).some(function(p){ return p.providerId === 'google.com'; });
+      document.getElementById('panelPassword').querySelector('form').classList.toggle('hidden', isGoogle);
+      document.getElementById('googlePasswordNote').classList.toggle('hidden', !isGoogle);
+    }
+
+    function showCustomerTab(name) {
+      ['account','edit','password'].forEach(function(n){
+        document.getElementById('panel' + n.charAt(0).toUpperCase() + n.slice(1)).classList.toggle('hidden', n !== name);
+        var b = document.getElementById('tab' + n.charAt(0).toUpperCase() + n.slice(1));
+        if (b) b.classList.toggle('active', n === name);
+      });
+    }
+
     async function saveCustomerUser(u, extra) {
       if (!u) return null;
-      var id = u.uid || u.id;
-      if (!id) return null;
+      var id = u.uid;
       var payload = {
         fullName: (extra && extra.fullName) || u.displayName || '',
         email: u.email || '',
         phone: (extra && extra.phone) || '',
-        photoURL: u.photoURL || '',
+        photoURL: (extra && extra.photoURL) || u.photoURL || '',
         id: id,
         createdAt: new Date().toISOString(),
-        type: 'customer'
+        type: 'customer',
+        provider: (u.providerData && u.providerData[0] && u.providerData[0].providerId === 'google.com') ? 'Google' : 'البريد وكلمة المرور'
       };
       try {
         await Promise.race([
-          db.collection('customers').doc(id).set(payload, { merge: true }),
-          new Promise(function(_, reject) {
-            setTimeout(function() { reject(new Error('Firestore timeout')); }, 5000);
-          })
+          db.collection('customers').doc(id).set(payload, {merge:true}),
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('Firestore timeout')); }, 5000); })
         ]);
-      } catch (e) {
-        console.warn('تعذر حفظ بيانات العميل في Firestore:', e);
-      }
+      } catch (e) { console.warn('Customer profile save:', e); }
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
-        local = local.filter(function(c) { return c.id !== id; });
+        local = local.filter(function(c){ return c.id !== id; });
         local.unshift(payload);
-        localStorage.setItem('local_customers', JSON.stringify(local.slice(0, 200)));
+        localStorage.setItem('local_customers', JSON.stringify(local.slice(0,200)));
       } catch (e2) {}
       return payload;
     }
 
     async function finishCustomerLogin(user, extra) {
       if (!user || finishing) return;
-
-      // تثبيت جلسة العميل والتحويل فوراً؛ Firestore لا يجب أن يمنع تسجيل الدخول.
+      finishing = true;
       try {
         sessionStorage.removeItem('souqi_pending_customer');
         sessionStorage.setItem('souqi_customer', '1');
       } catch (e) {}
-
-      showSuccessAndHome();
-
-      // حفظ بيانات العميل في الخلفية مع مهلة، دون تعطيل التحويل.
-      saveCustomerUser(user, extra).catch(function(e) {
-        console.warn('Customer profile save failed:', e);
-      });
+      var profile = await loadCustomerProfile(user);
+      if (extra) profile = Object.assign(profile, extra);
+      renderCustomer(profile, user);
+      finishing = false;
     }
 
     async function handleCustomer(e) {
@@ -138,111 +260,187 @@
       btn.disabled = true; btn.textContent = 'جاري...';
       var email = document.getElementById('email').value.trim();
       var pass = document.getElementById('password').value;
-      var extra = {
-        fullName: document.getElementById('fullName').value.trim(),
-        phone: document.getElementById('phone').value.trim()
-      };
+      var extra = { fullName:document.getElementById('fullName').value.trim(), phone:document.getElementById('phone').value.trim() };
+
       try {
         var login = await auth.signInWithEmailAndPassword(email, pass);
         await finishCustomerLogin(login.user, extra);
         return;
       } catch (e1) {
-        console.warn('Customer sign-in failed:', e1);
         if (e1 && e1.code !== 'auth/user-not-found') {
           var messages = {
-            'auth/wrong-password': 'البريد أو كلمة المرور غير صحيحة.',
-            'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة.',
-            'auth/invalid-email': 'البريد الإلكتروني غير صحيح.',
-            'auth/too-many-requests': 'تمت محاولات كثيرة. حاول لاحقاً.'
+            'auth/wrong-password':'البريد أو كلمة المرور غير صحيحة.',
+            'auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة.',
+            'auth/invalid-email':'البريد الإلكتروني غير صحيح.',
+            'auth/too-many-requests':'تمت محاولات كثيرة. حاول لاحقاً.'
           };
           alert(messages[e1.code] || e1.message || 'تعذر تسجيل الدخول.');
-          btn.disabled = false;
-          btn.textContent = 'تسجيل / دخول';
-          return;
+          btn.disabled = false; btn.textContent = 'تسجيل / دخول'; return;
         }
       }
+
       var result = await registerCustomer(email, pass, extra);
       if (result.success && auth.currentUser) {
         await finishCustomerLogin(auth.currentUser, extra);
         return;
       }
-      alert(result.error || 'فشل');
+      alert(result.error || 'فشل إنشاء الحساب');
       btn.disabled = false; btn.textContent = 'تسجيل / دخول';
     }
 
     async function handleCustomerGoogle() {
       var btn = document.getElementById('googleBtn');
       var st = document.getElementById('googleStatus');
-      btn.disabled = true;
-      btn.textContent = 'جاري التحويل...';
-      if (st) st.textContent = 'سيفتح Google الآن...';
-      try {
-        sessionStorage.setItem('souqi_pending_customer', '1');
-        sessionStorage.setItem('souqi_auth_mode', 'customer');
-      } catch (e) {}
-
-      // إن كان مسجلاً مسبقاً (مثلاً كتاجر) — سجّله كزبون وأكمل
-      if (auth.currentUser) {
-        await finishCustomerLogin(auth.currentUser);
-        return;
-      }
+      btn.disabled = true; btn.textContent = 'فتح Google...';
+      if (st) st.textContent = 'اختر حساب Google بنفسك؛ لن يتم تسجيل الدخول قبل الاختيار.';
 
       try {
+        // مهم: لا نستخدم auth.currentUser كتسجيل دخول للزبون.
+        // إذا كانت هناك جلسة تاجر/حساب قديم، نغلقها أولاً ثم نطلب اختيار Google.
+        await auth.signOut();
+        try {
+          sessionStorage.removeItem('souqi_customer');
+          sessionStorage.setItem('souqi_pending_customer', '1');
+          sessionStorage.setItem('souqi_auth_mode', 'customer');
+        } catch (e) {}
+
         var provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        // redirect دائماً على هذه الصفحة — لا popup (يعلق على الجوال)
+        provider.setCustomParameters({prompt:'select_account'});
         await auth.signInWithRedirect(provider);
       } catch (e) {
-        alert('خطأ: ' + (e.message || e));
+        console.error(e);
         resetGoogleBtn();
+        if (st) st.textContent = '';
+        alert('تعذر فتح Google: ' + (e.message || e));
       }
     }
 
-    // معالجة العودة من Google — أول شيء عند تحميل الصفحة
-    (async function bootstrap() {
-      // 1) نتيجة redirect
+    async function handleGoogleReturn() {
       try {
-        var res = await auth.getRedirectResult();
-        if (res && res.user) {
-          await finishCustomerLogin(res.user);
-          return;
+        var result = await auth.getRedirectResult();
+        if (result && result.user) {
+          try { sessionStorage.removeItem('souqi_pending_customer'); sessionStorage.removeItem('souqi_auth_mode'); } catch(e){}
+          await finishCustomerLogin(result.user);
+          return true;
         }
       } catch (e) {
-        console.warn(e);
+        console.warn('Google redirect:', e);
+        resetGoogleBtn();
+      }
+      return false;
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      if (!auth.currentUser || !currentCustomer) return;
+      var btn = document.getElementById('saveProfileBtn');
+      btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+
+      var name = document.getElementById('editName').value.trim();
+      var phone = document.getElementById('editPhone').value.trim();
+      var photoURL = currentCustomer.photoURL || auth.currentUser.photoURL || '';
+
+      var file = document.getElementById('profilePhoto').files[0];
+      if (file) {
+        try {
+          photoURL = await compressProfileImage(file);
+        } catch (err) { alert(err.message || 'تعذر قراءة الصورة'); }
       }
 
-      // 2) جلسة موجودة بعد pending
-      var pending = false;
-      try { pending = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
-      if (pending && auth.currentUser) {
+      try {
+        await auth.currentUser.updateProfile({displayName:name, photoURL:photoURL && photoURL.indexOf('data:') !== 0 ? photoURL : null});
+      } catch (err2) {}
+
+      currentCustomer = Object.assign({}, currentCustomer, {fullName:name, phone:phone, photoURL:photoURL});
+      await saveCustomerUser(auth.currentUser, currentCustomer);
+      renderCustomer(currentCustomer, auth.currentUser);
+      toast('تم حفظ بيانات الحساب');
+      btn.disabled = false; btn.textContent = 'حفظ التعديلات';
+    }
+
+    function compressProfileImage(file) {
+      return new Promise(function(resolve,reject){
+        if (file.size > 8 * 1024 * 1024) return reject(new Error('الصورة كبيرة؛ اختر صورة أقل من 8MB.'));
+        var reader = new FileReader();
+        reader.onerror = function(){ reject(new Error('فشل قراءة الصورة')); };
+        reader.onload = function(ev){
+          var img = new Image();
+          img.onerror = function(){ reject(new Error('الصورة غير صالحة')); };
+          img.onload = function(){
+            var max=500, w=img.width, h=img.height;
+            if(w>max){ h=Math.round(h*max/w); w=max; }
+            var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            var data=canvas.toDataURL('image/jpeg',0.72);
+            if(data.length>350000) data=canvas.toDataURL('image/jpeg',0.5);
+            resolve(data);
+          };
+          img.src=ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function changeCustomerPassword(e) {
+      e.preventDefault();
+      var user = auth.currentUser;
+      if (!user || !user.email) return;
+      var oldPass=document.getElementById('oldPassword').value;
+      var p1=document.getElementById('newPassword').value;
+      var p2=document.getElementById('newPassword2').value;
+      if(p1!==p2) return alert('كلمتا المرور الجديدتان غير متطابقتين.');
+
+      var btn=document.getElementById('passwordBtn');
+      btn.disabled=true; btn.textContent='جاري التغيير...';
+      try {
+        var cred=firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
+        await user.reauthenticateWithCredential(cred);
+        await user.updatePassword(p1);
+        document.getElementById('oldPassword').value='';
+        document.getElementById('newPassword').value='';
+        document.getElementById('newPassword2').value='';
+        toast('تم تغيير كلمة المرور');
+      } catch(err) {
+        alert(err.code==='auth/wrong-password' ? 'كلمة المرور الحالية غير صحيحة.' : (err.message || 'تعذر تغيير كلمة المرور.'));
+      }
+      btn.disabled=false; btn.textContent='تغيير كلمة المرور';
+    }
+
+    async function logoutCustomer() {
+      try { await auth.signOut(); } catch(e) {}
+      try {
+        sessionStorage.removeItem('souqi_customer');
+        sessionStorage.removeItem('souqi_pending_customer');
+        sessionStorage.removeItem('souqi_auth_mode');
+      } catch(e2) {}
+      currentCustomer=null;
+      finishing=false;
+      document.getElementById('accountBox').classList.add('hidden');
+      document.getElementById('loginBox').classList.remove('hidden');
+      resetGoogleBtn();
+    }
+
+    (async function bootstrap() {
+      // لا نعتبر auth.currentUser الموجود من التاجر دخولاً للزبون.
+      var customerSession=false;
+      try { customerSession=sessionStorage.getItem('souqi_customer')==='1'; } catch(e) {}
+
+      var returned = await handleGoogleReturn();
+      if (returned) return;
+
+      if (customerSession && auth.currentUser) {
         await finishCustomerLogin(auth.currentUser);
         return;
       }
 
-      // 3) راقب auth
-      auth.onAuthStateChanged(async function(user) {
-        if (!user) {
-          resetGoogleBtn();
-          return;
+      // الصفحة نظيفة: لا نعرض حساباً محفوظاً كحساب زبون.
+      if (!customerSession) {
+        try { localStorage.removeItem('local_customers'); } catch(e2) {}
+        if (auth.currentUser) {
+          try { await auth.signOut(); } catch(e3) {}
         }
-        var p = false;
-        try { p = sessionStorage.getItem('souqi_pending_customer') === '1'; } catch (e) {}
-        if (p) await finishCustomerLogin(user);
-      });
-
-      // 4) أعد الزر بعد 12 ثانية إن لم ينجح
-      setTimeout(function() {
-        if (!finishing) {
-          try {
-            if (sessionStorage.getItem('souqi_pending_customer') === '1' && !auth.currentUser) {
-              sessionStorage.removeItem('souqi_pending_customer');
-              resetGoogleBtn();
-              var st = document.getElementById('googleStatus');
-              if (st) st.textContent = 'لم يكتمل Google — جرّب مرة أخرى أو استخدم البريد';
-            }
-          } catch (e) {}
-        }
-      }, 12000);
+      }
+      resetGoogleBtn();
     })();
   </script>
 </body>

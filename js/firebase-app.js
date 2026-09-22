@@ -126,19 +126,14 @@ async function loginMerchant(email, password) {
 async function loginWithGoogle(opts) {
   opts = opts || {};
   var asCustomer = !!opts.asCustomer;
+  var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e) {}
+
+  // جرّب popup أولاً (أسرع) — إن فشل استخدم redirect
   try {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-    var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (isMobile) {
-      try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e) {}
-      await auth.signInWithRedirect(provider);
-      return { success: true, redirecting: true };
-    }
     var result = await auth.signInWithPopup(provider);
-    if (asCustomer) {
-      return { success: true, user: result.user };
-    }
+    if (asCustomer) return { success: true, user: result.user };
     var vendor = await ensureVendorDoc(result.user, {
       fullName: result.user.displayName || "",
       shopName: result.user.displayName || "متجري"
@@ -149,14 +144,18 @@ async function loginWithGoogle(opts) {
       if (asCustomer) return { success: true, user: auth.currentUser };
       return { success: true, vendor: vendorFromUser(auth.currentUser, {}) };
     }
-    try {
-      var provider2 = new firebase.auth.GoogleAuthProvider();
-      try { sessionStorage.setItem("souqi_auth_mode", asCustomer ? "customer" : "vendor"); } catch (e0) {}
-      await auth.signInWithRedirect(provider2);
-      return { success: true, redirecting: true };
-    } catch (e2) {
-      return { success: false, error: (e2.message || e.message || "فشل الدخول عبر Google") };
+    var msg = (e && e.message) || "";
+    var code = (e && e.code) || "";
+    // إن أُغلق أو حُظر popup → redirect
+    if (code.indexOf("popup") >= 0 || /popup|blocked|cancelled|closed/i.test(msg) || true) {
+      try {
+        await auth.signInWithRedirect(provider);
+        return { success: true, redirecting: true };
+      } catch (e2) {
+        return { success: false, error: (e2.message || msg || "فشل الدخول عبر Google") };
+      }
     }
+    return { success: false, error: msg || "فشل الدخول عبر Google" };
   }
 }
 

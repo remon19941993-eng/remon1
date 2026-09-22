@@ -381,6 +381,57 @@
       }).join('');
     }
 
+    
+    async function adminDeleteVendor(i) {
+      var v = vendorsCache[i];
+      if (!v) { toast('تاجر غير موجود'); return; }
+      var name = v.shopName || v.fullName || v.email || 'تاجر';
+      if (!confirm('مسح التاجر «' + name + '» نهائياً مع منتجاته؟')) return;
+      var id = v.id;
+      // محلي فوري
+      try {
+        var local = JSON.parse(localStorage.getItem('local_vendors') || '[]');
+        local = local.filter(function(x) { return x.id !== id && x.email !== v.email; });
+        localStorage.setItem('local_vendors', JSON.stringify(local));
+      } catch (e) {}
+      try {
+        var prods = JSON.parse(localStorage.getItem('local_products') || '[]');
+        prods = prods.filter(function(p) { return p.vendorId !== id; });
+        localStorage.setItem('local_products', JSON.stringify(prods));
+      } catch (e2) {}
+      // سيرفر
+      try {
+        if (typeof deleteVendor === 'function') await deleteVendor(id);
+        else if (id) await db.collection('vendors').doc(id).delete();
+      } catch (e3) {
+        try { if (id) await db.collection('vendors').doc(id).delete(); } catch (e4) {}
+      }
+      vendorsCache = vendorsCache.filter(function(_, idx) { return idx !== i; });
+      toast('تم مسح «' + name + '»');
+      loadVendors();
+      try { loadProducts(); } catch (e5) {}
+    }
+
+    async function adminDeleteCustomer(i) {
+      var c = customersCache[i];
+      if (!c) { toast('زبون غير موجود'); return; }
+      var name = c.fullName || c.name || c.email || 'زبون';
+      if (!confirm('مسح الزبون «' + name + '»؟')) return;
+      try {
+        if (typeof deleteCustomer === 'function') await deleteCustomer(c.id, c.email);
+        else {
+          if (c.id) await db.collection('customers').doc(c.id).delete();
+        }
+      } catch (e) {}
+      try {
+        var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
+        local = local.filter(function(x) { return x.id !== c.id && x.email !== c.email; });
+        localStorage.setItem('local_customers', JSON.stringify(local));
+      } catch (e2) {}
+      toast('تم مسح «' + name + '»');
+      loadCustomers();
+    }
+
     async function adminDeleteProduct(i) {
       var p = productsCache[i];
       if (!p) return;

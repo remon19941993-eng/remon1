@@ -70,7 +70,7 @@
           <div class="form-group"><label>البريد</label><input type="email" id="email" required></div>
           <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" required minlength="6"></div>
           <div class="form-group"><label>الهاتف</label><input type="tel" id="phone"></div>
-          <button type="submit" class="btn btn-primary full" id="custBtn">تسجيل</button>
+          <button type="submit" class="btn btn-primary full" id="custBtn">تسجيل / دخول</button>
         </form>
       </div>
 
@@ -178,19 +178,27 @@
 
     async function handleCustomerGoogle() {
       var btn = document.getElementById('googleBtn');
+      if (!btn) return;
       btn.disabled = true; btn.textContent = 'جاري الاتصال...';
-      var t = setTimeout(resetGoogleBtn, 25000);
+      var t = setTimeout(function() {
+        resetGoogleBtn();
+        alert('انتهت المهلة. جرّب مرة أخرى أو سجّل بالبريد.');
+      }, 20000);
       try {
         var result = await loginWithGoogle({ asCustomer: true });
-        if (result.redirecting) return;
+        if (result && result.redirecting) {
+          btn.textContent = 'جاري التحويل إلى Google...';
+          return;
+        }
         clearTimeout(t);
-        if (result.success) {
+        if (result && result.success) {
           var u = result.user || auth.currentUser;
+          if (!u) { resetGoogleBtn(); alert('لم يتم الدخول'); return; }
           var c = await saveCustomerUser(u);
           showProfile(c || { fullName: u.displayName, email: u.email, photoURL: u.photoURL });
           return;
         }
-        alert(result.error || 'فشل');
+        alert((result && result.error) || 'فشل الدخول');
       } catch (e) {
         clearTimeout(t);
         alert(e.message || 'فشل Google');

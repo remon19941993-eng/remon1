@@ -317,24 +317,43 @@ async function registerCustomer(email, password, data) {
     var payload = Object.assign({}, data || {}, {
       email: email,
       id: userCred.user.uid,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      type: "customer",
+      provider: "البريد وكلمة المرور",
+      status: "active"
     });
+
+    // إنشاء حساب العميل لا يعتبر مكتملاً حتى نحاول إنشاء مستنده في customers.
+    // هذا هو السجل الذي تعتمد عليه لوحة الأدمن.
     try {
       await Promise.race([
-        db.collection("customers").doc(userCred.user.uid).set(payload),
+        db.collection("customers").doc(userCred.user.uid).set(payload, {merge:true}),
         new Promise(function(_, rej) {
-          setTimeout(function() { rej(new Error("timeout")); }, 5000);
+          setTimeout(function() { rej(new Error("Firestore timeout")); }, 8000);
         })
       ]);
-    } catch (e) {
-      console.warn("Customer Firestore save failed:", e);
+    } catch (firestoreError) {
+      console.error("Customer Firestore save failed:", firestoreError);
+      try {
+        var localFailed = JSON.parse(localStorage.getItem("local_customers") || "[]");
+        localFailed = localFailed.filter(function(c) { return c.id !== userCred.user.uid; });
+        localFailed.unshift(payload);
+        localStorage.setItem("local_customers", JSON.stringify(localFailed.slice(0, 200)));
+      } catch (eLocal) {}
+      return {
+        success: false,
+        error: "تم إنشاء حساب الدخول، لكن لم يتم حفظ ملف الزبون في Firebase. " +
+          ((firestoreError && firestoreError.code) ? firestoreError.code : "تحقق من صلاحيات Firestore.")
+      };
     }
+
     try {
       var local = JSON.parse(localStorage.getItem("local_customers") || "[]");
+      local = local.filter(function(c) { return c.id !== userCred.user.uid; });
       local.unshift(payload);
       localStorage.setItem("local_customers", JSON.stringify(local.slice(0, 200)));
     } catch (e2) {}
-    return { success: true };
+    return { success: true, user: userCred.user, customer: payload };
   } catch (e) {
     return { success: false, error: e.message };
   }

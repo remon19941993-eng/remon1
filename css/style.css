@@ -27,15 +27,31 @@ body {
 
 /* ===== Quran Banner ===== */
 .quran-banner {
-  background: var(--primary);
-  color: var(--gold);
+  background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%);
+  color: #e8c547;
   text-align: center;
-  padding: 12px 16px;
-  font-size: 14px;
-  letter-spacing: 0.3px;
+  padding: 18px 20px 16px;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid rgba(232,197,71,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
-.quran-banner .bismillah { font-weight: 800; margin-bottom: 4px; font-size: 17px; letter-spacing: 0.5px; }
-.quran-banner .ayah { opacity: 0.95; font-size: 15px; font-weight: 600; }
+.quran-banner .bismillah {
+  font-weight: 800;
+  margin-bottom: 8px;
+  font-size: 22px;
+  letter-spacing: 1.2px;
+  text-shadow: 0 0 24px rgba(232,197,71,0.35);
+  line-height: 1.5;
+}
+.quran-banner .ayah {
+  opacity: 0.98;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.7;
+  color: #f5e6a8;
+  max-width: 720px;
+  margin: 0 auto;
+}
 
 /* ===== Navbar ===== */
 .navbar {
@@ -388,21 +404,45 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 10px 32px rgba(0,0,0,0.14);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.14), 0 0 0 0 rgba(232,197,71,0.4);
   cursor: pointer;
   z-index: 999;
-  transition: transform 0.2s;
+  transition: transform 0.25s;
   border: 1px solid var(--border);
+  animation: ai-float 3s ease-in-out infinite, ai-pulse 2.5s ease-in-out infinite;
 }
-.ai-assistant:hover { transform: scale(1.04); }
+@keyframes ai-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes ai-pulse {
+  0%, 100% { box-shadow: 0 10px 32px rgba(0,0,0,0.14), 0 0 0 0 rgba(232,197,71,0.35); }
+  50% { box-shadow: 0 10px 32px rgba(0,0,0,0.14), 0 0 0 10px rgba(232,197,71,0); }
+}
+.ai-assistant:hover { transform: scale(1.06) translateY(-2px); animation: none; }
 .ai-avatar {
-  background: linear-gradient(145deg, #2c3e50, #1a252f) !important;
-  width: 42px; height: 42px;
-  background: linear-gradient(135deg, var(--gold), #e8c547);
+  width: 46px; height: 46px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e) !important;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(232,197,71,0.3);
 }
-.ai-face { font-size: 26px; filter: none; }
+.ai-face {
+  font-size: 28px;
+  display: inline-block;
+  animation: ai-face-anim 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ai-face-anim {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  15% { transform: scale(1.08) rotate(-6deg); }
+  30% { transform: scale(1.05) rotate(6deg); }
+  45% { transform: scale(1.1) rotate(0deg); }
+  60% { transform: scale(1) translateY(-2px); }
+  75% { transform: scale(1.06) rotate(-3deg); }
+}
 .ai-text {
   font-weight: 700;
   font-size: 13.5px;

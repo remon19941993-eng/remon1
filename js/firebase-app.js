@@ -323,42 +323,16 @@ async function registerCustomer(email, password, data) {
   }
 }
 
-var _navUpdating = false;
+// لا نضيف «لوحة التاجر» للشريط العلوي — فقط داخل vendor.html
 async function updateNavForVendor() {
-  if (_navUpdating) return;
-  _navUpdating = true;
   try {
-    var user = auth.currentUser;
-    var links = document.querySelectorAll(".nav-links");
-    links.forEach(function(nav) {
-      var old = nav.querySelector(".vendor-publish-link");
-      if (old) old.remove();
-    });
-    if (!user) { _navUpdating = false; return; }
-    var vendor = null;
-    try {
-      vendor = await getCurrentVendor();
-    } catch (e) {
-      vendor = vendorFromUser(user, {});
-    }
-    if (vendor && isAllowedToPublish(vendor)) {
-      links.forEach(function(nav) {
-        if (nav.querySelector(".vendor-publish-link")) return;
-        var a = document.createElement("a");
-        a.href = "vendor.html#publish";
-        a.className = "vendor-publish-link nav-cta";
-        a.textContent = "🏪 لوحة التاجر";
-        a.href = "vendor.html";
-        nav.appendChild(a);
-      });
-    }
+    document.querySelectorAll(".vendor-publish-link").forEach(function(el) { el.remove(); });
   } catch (e) {}
-  _navUpdating = false;
 }
 
 if (typeof auth !== "undefined") {
-  auth.onAuthStateChanged(function(user) {
-    setTimeout(updateNavForVendor, 300);
+  auth.onAuthStateChanged(function() {
+    setTimeout(updateNavForVendor, 200);
   });
 }
 

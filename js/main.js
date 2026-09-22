@@ -262,25 +262,65 @@ function checkAnswer(btn, selectedIndex) {
   }
   setTimeout(loadQuizQuestion, 1800);
 }
+function setAiFace(mood) {
+  var f = document.getElementById('aiFace');
+  if (!f) return;
+  var map = { smile: '😊', think: '🤔', happy: '😄', wave: '🤗', robot: '🤖', ok: '😉' };
+  f.textContent = map[mood] || '😊';
+}
 function toggleAI() {
   var panel = document.getElementById('aiPanel');
-  if (panel) panel.classList.toggle('open');
+  if (!panel) return;
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    setAiFace('wave');
+    setTimeout(function() { setAiFace('smile'); }, 900);
+  }
+}
+function aiType(el, text, cb) {
+  if (!el) return;
+  el.innerHTML = '';
+  setAiFace('think');
+  var i = 0;
+  var plain = text.replace(/<[^>]+>/g, '');
+  var timer = setInterval(function() {
+    i++;
+    if (i >= plain.length) {
+      clearInterval(timer);
+      el.innerHTML = text;
+      setAiFace('smile');
+      if (cb) cb();
+    } else {
+      el.textContent = plain.slice(0, i) + '▋';
+    }
+  }, 18);
 }
 function aiAsk(type) {
   var reply = document.getElementById('aiReply');
   if (!reply) return;
   if (type === 'products') {
-    reply.innerHTML = '📦 اضغط على أي تصنيف رئيسي بالأعلى، أو استخدم أيقونة البحث 🔍 للعثور على منتج.';
-    var cats = document.getElementById('categories');
-    if (cats) { toggleAI(); cats.scrollIntoView({ behavior: 'smooth' }); }
+    aiType(reply, 'أكيد! تصفّح التصنيفات بالأعلى أو اضغط 🔍 للبحث. عندك إلكترونيات، أزياء، تجميل، أقمشة والمزيد.');
+    setTimeout(function() {
+      var cats = document.querySelector('.categories') || document.getElementById('categories');
+      if (cats) cats.scrollIntoView({ behavior: 'smooth' });
+    }, 600);
   } else if (type === 'vendor') {
-    reply.innerHTML = '🏪 للتجار: انضم مجاناً 3 أيام من «انضم كتاجر»، انشر منتجاتك من لوحة التاجر، وعدّل أو امسح من «منتجاتي».';
+    aiType(reply, 'للتاجر: من «انضم كتاجر» تحصل على 3 أيام مجانية، ثم انشر من صفحة دخول التاجر. بعد التجربة: 100 ل.س أسبوعياً عبر شام كاش.');
   } else if (type === 'quiz') {
-    reply.innerHTML = '✨ أجب على سؤال صحيح لتحصل على بطاقة خصم. جاري فتح التحدي...';
-    setTimeout(function() { toggleAI(); if (typeof openQuizDemo === 'function') openQuizDemo(); }, 400);
+    aiType(reply, 'يلا نتحدى! أجب صح واحصل على بطاقة خصم. جاري فتح قائمة الأسئلة...', function() {
+      setTimeout(function() {
+        if (typeof openQuizDemo === 'function') openQuizDemo();
+        else {
+          var fm = document.getElementById('featuresMenu');
+          if (fm) fm.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
+    });
   } else if (type === 'admin') {
-    reply.innerHTML = '📞 الإدارة عبر واتساب: <a href="https://wa.me/963942591022" target="_blank" dir="ltr">+963 942 591 022</a>';
-    setTimeout(function() { window.open('https://wa.me/963942591022?text=' + encodeURIComponent('مرحباً إدارة سوق الشام'), '_blank'); }, 500);
+    aiType(reply, 'تواصل مع الإدارة على واتساب: +963 942 591 022 — أقدر أفتح المحادثة لك الآن.');
+    setTimeout(function() {
+      window.open('https://wa.me/963942591022?text=' + encodeURIComponent('مرحباً إدارة سوقي'), '_blank');
+    }, 1200);
   }
 }
 function aiSend() {
@@ -289,17 +329,29 @@ function aiSend() {
   if (!input || !reply) return;
   var q = (input.value || '').trim();
   if (!q) return;
-  var low = q.toLowerCase();
-  if (low.indexOf('منتج') >= 0 || low.indexOf('بحث') >= 0) aiAsk('products');
-  else if (low.indexOf('تاجر') >= 0 || low.indexOf('نشر') >= 0) aiAsk('vendor');
-  else if (low.indexOf('سؤال') >= 0 || low.indexOf('خصم') >= 0 || low.indexOf('تحدي') >= 0) aiAsk('quiz');
-  else if (low.indexOf('واتس') >= 0 || low.indexOf('ادمن') >= 0 || low.indexOf('إدارة') >= 0 || low.indexOf('تواصل') >= 0) aiAsk('admin');
-  else reply.innerHTML = 'فهمت سؤالك. جرّب: المنتجات، نصائح التاجر، التحدي، أو التواصل مع الإدارة عبر واتساب +963942591022';
   input.value = '';
+  var low = q.toLowerCase();
+  if (/منتج|بحث|سعر|شراء|سلع/.test(low)) aiAsk('products');
+  else if (/تاجر|نشر|متجر|اشتراك/.test(low)) aiAsk('vendor');
+  else if (/سؤال|خصم|تحدي|لعبة|جغراف|اسلام/.test(low)) aiAsk('quiz');
+  else if (/واتس|ادمن|إدارة|تواصل|مساعدة|رقم/.test(low)) aiAsk('admin');
+  else if (/مرحبا|السلام|هلا|صباح|مساء/.test(low)) {
+    aiType(reply, 'أهلاً وسهلاً! أنا مساعد سوقي الذكي. أقدر أساعدك بالمنتجات، انضمام التجار، التحدي، أو التواصل مع الإدارة. شو بتحتاج؟');
+    setAiFace('happy');
+  } else {
+    aiType(reply, 'فهمتك. جرّب تسألني عن: المنتجات، كيف تصير تاجر، تحدي الأسئلة، أو رقم الإدارة. أنا هنا لمساعدتك 😊');
+  }
 }
 document.addEventListener('DOMContentLoaded', function() {
   var inp = document.getElementById('aiInput');
   if (inp) inp.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); aiSend(); }
   });
+  // حركة وجه دورية
+  setInterval(function() {
+    var f = document.getElementById('aiFace');
+    if (!f) return;
+    var moods = ['😊', '😉', '😄', '🤗', '😊'];
+    if (Math.random() > 0.6) f.textContent = moods[Math.floor(Math.random() * moods.length)];
+  }, 3500);
 });

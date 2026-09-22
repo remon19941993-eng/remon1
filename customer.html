@@ -278,6 +278,7 @@
       try {
         sessionStorage.removeItem('souqi_pending_customer');
         sessionStorage.setItem('souqi_customer', '1');
+        localStorage.setItem('souqi_customer_logged_in', '1');
       } catch (e) {}
 
       // مهم: لا ننتظر Firestore قبل عرض الصفحة.
@@ -366,7 +367,17 @@
       try {
         // مهم: لا نستخدم auth.currentUser كتسجيل دخول للزبون.
         // إذا كانت هناك جلسة تاجر/حساب قديم، نغلقها أولاً ثم نطلب اختيار Google.
-        await auth.signOut();
+        // إذا كان الزبون مسجلاً بالفعل على هذا الجهاز، لا نطلب منه تسجيل الدخول مرة أخرى.
+        if (auth.currentUser) {
+          var remembered = false;
+          try { remembered = localStorage.getItem('souqi_customer_logged_in') === '1'; } catch (e0) {}
+          if (remembered) {
+            await finishCustomerLogin(auth.currentUser);
+            return;
+          }
+          // إن كانت جلسة أخرى (مثل التاجر)، نغلقها قبل اختيار حساب Google للزبون.
+          await auth.signOut();
+        }
         try {
           sessionStorage.removeItem('souqi_customer');
           sessionStorage.setItem('souqi_pending_customer', '1');
@@ -510,6 +521,8 @@
         sessionStorage.removeItem('souqi_customer');
         sessionStorage.removeItem('souqi_pending_customer');
         sessionStorage.removeItem('souqi_auth_mode');
+        localStorage.removeItem('souqi_customer_logged_in');
+        localStorage.removeItem('souqi_customer_logged_in');
       } catch(e2) {}
       currentCustomer=null;
       finishing=false;
@@ -527,24 +540,26 @@
         console.warn('Firebase persistence:', e);
       }
 
-      // لا نعتبر auth.currentUser الموجود من التاجر دخولاً للزبون.
       var customerSession=false;
-      try { customerSession=sessionStorage.getItem('souqi_customer')==='1'; } catch(e) {}
+      try {
+        customerSession =
+          sessionStorage.getItem('souqi_customer') === '1' ||
+          localStorage.getItem('souqi_customer_logged_in') === '1';
+      } catch(e) {}
 
       var returned = await handleGoogleReturn();
       if (returned) return;
 
-      if (customerSession && auth.currentUser) {
+      // Firebase LOCAL persistence تعيد المستخدم حتى بعد إغلاق المتصفح.
+      // إذا كان هذا الجهاز يعرف أن الجلسة هي جلسة زبون، افتح حسابه مباشرة.
+      if (auth.currentUser && customerSession) {
         await finishCustomerLogin(auth.currentUser);
         return;
       }
 
-      // الصفحة نظيفة: لا نعرض حساباً محفوظاً كحساب زبون.
-      if (!customerSession) {
-        try { localStorage.removeItem('local_customers'); } catch(e2) {}
-        if (auth.currentUser) {
-          try { await auth.signOut(); } catch(e3) {}
-        }
+      // إذا لم توجد جلسة زبون، لا نسمح لجلسة تاجر قديمة بأن تظهر كحساب زبون.
+      if (!customerSession && auth.currentUser) {
+        try { await auth.signOut(); } catch(e3) {}
       }
       resetGoogleBtn();
     })();

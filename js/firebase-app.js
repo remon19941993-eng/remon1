@@ -320,8 +320,15 @@ async function registerCustomer(email, password, data) {
       createdAt: new Date().toISOString()
     });
     try {
-      await db.collection("customers").doc(userCred.user.uid).set(payload);
-    } catch (e) {}
+      await Promise.race([
+        db.collection("customers").doc(userCred.user.uid).set(payload),
+        new Promise(function(_, rej) {
+          setTimeout(function() { rej(new Error("timeout")); }, 5000);
+        })
+      ]);
+    } catch (e) {
+      console.warn("Customer Firestore save failed:", e);
+    }
     try {
       var local = JSON.parse(localStorage.getItem("local_customers") || "[]");
       local.unshift(payload);

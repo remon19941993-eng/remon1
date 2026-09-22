@@ -327,7 +327,13 @@
           new Promise(function(_, rej) { setTimeout(function() { rej(new Error('t')); }, 8000); })
         ]);
         list = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
-      } catch (e) {}
+      } catch (e) {
+        console.error('Admin customers Firestore error:', e);
+        box.innerHTML = '<p style="color:#c62828;text-align:center;padding:20px;">تعذر قراءة قائمة الزبائن من Firebase.<br><small>' +
+          ((e && e.code) ? e.code : (e && e.message ? e.message : 'خطأ غير معروف')) +
+          '</small></p>';
+        return;
+      }
       try {
         var local = JSON.parse(localStorage.getItem('local_customers') || '[]');
         local.forEach(function(c) {

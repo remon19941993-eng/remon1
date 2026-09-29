@@ -20,7 +20,14 @@ window.souqiAuthPersistenceEnabled = true;
 
 (function loadSharedMarketplaceEnhancements() {
   var s = document.createElement('script');
-  s.src = 'js/marketplace-enhancements.js?v=1';
+  s.src = 'js/marketplace-enhancements.js?v=2';
+  s.async = false;
+  document.head.appendChild(s);
+})();
+
+(function loadGoogleLoginFix() {
+  var s = document.createElement('script');
+  s.src = 'js/google-login-fix.js?v=1';
   s.async = false;
   document.head.appendChild(s);
 })();
@@ -29,7 +36,7 @@ window.souqiAuthPersistenceEnabled = true;
   var path = String(location.pathname || '').toLowerCase();
   if (!path.endsWith('/customer.html') && !path.endsWith('customer.html')) return;
   var s = document.createElement('script');
-  s.src = 'js/customer-session-guard.js?v=2';
+  s.src = 'js/customer-session-guard.js?v=3';
   s.async = false;
   document.head.appendChild(s);
 })();

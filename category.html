@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التصنيف | سوق الشام</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-app.js"></script>
+</head>
+<body>
+  <div class="quran-banner">
+    <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p>
+  </div>
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo logo-souqi">
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+        <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا">
+  <defs>
+    <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/>
+      <stop offset="45%" stop-color="#1a1a22"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="egh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8e8ec"/>
+      <stop offset="100%" stop-color="#9a9aa5"/>
+    </linearGradient>
+  </defs>
+  <!-- wings -->
+  <path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/>
+  <path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/>
+  <!-- body -->
+  <path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/>
+  <!-- head -->
+  <circle cx="32" cy="14" r="5" fill="url(#eg)"/>
+  <path fill="#c9a227" d="M32 10l2 4h-4z"/>
+  <!-- chest shield (flag colors) -->
+  <rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/>
+  <rect x="27" y="26" width="10" height="4" fill="#fff"/>
+  <rect x="27" y="30" width="10" height="4" fill="#000"/>
+  <!-- stars on shield -->
+  <circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="32" cy="28" r="0.7" fill="#CE1126"/>
+  <circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/>
+  <!-- tail -->
+  <path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/>
+</svg></div>
+        <div class="logo-text">
+          <strong class="brand-name">سوقي</strong>
+          <small>سوق إلكتروني</small>
+        </div>
+        <svg class="sy-flag-svg" viewBox="0 0 36 24" width="36" height="24" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا">
+          <rect width="36" height="8" y="0" fill="#007A3D"/>
+          <rect width="36" height="8" y="8" fill="#FFFFFF"/>
+          <rect width="36" height="8" y="16" fill="#000000"/>
+          <g fill="#CE1126">
+            <polygon points="9,10 9.6,11.8 11.5,11.8 10,12.9 10.6,14.7 9,13.6 7.4,14.7 8,12.9 6.5,11.8 8.4,11.8"/>
+            <polygon points="18,10 18.6,11.8 20.5,11.8 19,12.9 19.6,14.7 18,13.6 16.4,14.7 17,12.9 15.5,11.8 17.4,11.8"/>
+            <polygon points="27,10 27.6,11.8 29.5,11.8 28,12.9 28.6,14.7 27,13.6 25.4,14.7 26,12.9 24.5,11.8 26.4,11.8"/>
+          </g>
+        </svg>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="join.html">انضم كتاجر</a>
+        <a href="customer.html">تسجيل</a>
+        <a href="vendor.html">دخول التاجر</a>
+      </nav>
+    </div>
+  </header>
+  <div class="container">
+    <div class="page-header" style="padding:30px 0 10px;">
+      <h1 id="catTitle">التصنيف</h1>
+      <p id="catDesc">منتجات من مختلف التجار</p>
+    </div>
+    <div class="products-grid" id="catProducts" style="padding-bottom:60px;"></div>
+  </div>
+  <script src="js/main.js"></script>
+  <script>
+    var catNames = {
+      construction: 'مواد البناء',
+      pc: 'كمبيوتر وإلكترونيات',
+      fabrics: 'أقمشة وخامات',
+      cosmetics: 'مواد التجميل',
+      electronics: 'أجهزة إلكترونية',
+      fashion: 'أزياء وإكسسوارات'
+    };
+    var params = new URLSearchParams(window.location.search);
+    var cat = params.get('cat') || 'electronics';
+    document.getElementById('catTitle').textContent = catNames[cat] || 'التصنيف';
+
+    function renderCat(list) {
+      var grid = document.getElementById('catProducts');
+      var filtered = (list || []).filter(function(p) { return p.category === cat; });
+      if (!filtered.length) {
+        grid.innerHTML = '<p style="text-align:center;color:#888;padding:40px;">لا توجد منتجات في هذا التصنيف بعد. كن أول من ينشر!</p>';
+        return;
+      }
+      grid.innerHTML = filtered.map(productCardHtml).join('');
+    }
+
+    if (typeof getProducts === 'function') {
+      getProducts(cat).then(renderCat).catch(function() { renderCat([]); });
+    } else {
+      renderCat([]);
+    }
+  </script>
+</body>
+</html>

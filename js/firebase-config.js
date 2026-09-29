@@ -5,7 +5,7 @@ const firebaseConfig = {
   projectId: "sham-market-1686f",
   storageBucket: "sham-market-1686f.firebasestorage.app",
   messagingSenderId: "729799834780",
-  appId: "1:7297991993:web:6dd2dcc9b2c0554b280159",
+  appId: "1:729799834780:web:6dd2dcc9b2c0554b280159",
   measurementId: "G-FY6V1KVJM2"
 };
 

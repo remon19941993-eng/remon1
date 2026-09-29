@@ -20,3 +20,15 @@ window.firebasePersistenceReady = auth.setPersistence(firebase.auth.Auth.Persist
 
 // تسجيل الخروج يجب أن يحدث فقط من زر «تسجيل خروج» الصريح داخل الواجهة.
 window.souqiAuthPersistenceEnabled = true;
+
+// إصلاح جلسة الزبون بعد العودة من Google أو بعد تحديث الصفحة.
+// هذا الملف يُحمّل بعد تهيئة Firebase وقبل كود الصفحة، لذلك نراقب استعادة الجلسة
+// ونترك الصفحة تعرض الحساب بدل اعتبار المستخدم خارجاً.
+(function loadCustomerSessionGuard() {
+  var path = String(location.pathname || '').toLowerCase();
+  if (!path.endsWith('/customer.html') && !path.endsWith('customer.html')) return;
+  var s = document.createElement('script');
+  s.src = 'js/customer-session-guard.js?v=2';
+  s.async = false;
+  document.head.appendChild(s);
+})();

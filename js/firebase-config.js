@@ -13,7 +13,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// انتظر اكتمال إعداد جلسة Firebase قبل أي تسجيل دخول/Google redirect.
-window.firebasePersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+// اجعل جلسة المستخدم دائمة على نفس الجهاز، ولا تنتهِ عند الانتقال بين صفحات المتجر.
+window.firebasePersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function (err) {
+  console.warn('Firebase persistence:', err);
+});
 
-// إبقاء الجلسة بعد التحديث / إغلاق التبويب (يتم ذلك عبر firebasePersistenceReady أعلاه).
+// تسجيل الخروج يجب أن يحدث فقط من زر «تسجيل خروج» الصريح داخل الواجهة.
+window.souqiAuthPersistenceEnabled = true;

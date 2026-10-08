@@ -339,17 +339,7 @@ async function setVendorStatus(vendorId, status) {
     data.subscription = "weekly_100_syp";
     data.joinDate = data.joinDate || new Date().toISOString();
   }
-  var ok = false;
-  try {
-    await db.collection("vendors").doc(vendorId).set(data, { merge: true });
-    ok = true;
-  } catch (e1) {
-    try {
-      await db.collection("vendors").doc(vendorId).update(data);
-      ok = true;
-    } catch (e2) {}
-  }
-  // حدّث المحلي دائماً حتى يعمل الأدمن فوراً
+  // حدّث المحلي أولاً حتى يظهر القرار فوراً في لوحة الأدمن.
   try {
     var list = getLocalVendors();
     var found = false;
@@ -363,9 +353,12 @@ async function setVendorStatus(vendorId, status) {
     if (!found) list.unshift(Object.assign({ id: vendorId }, data));
     localStorage.setItem("local_vendors", JSON.stringify(list));
   } catch (e3) {}
-  if (!ok) {
-    // نجح محلياً على الأقل
-  }
+  // المزامنة السحابية تعمل بالخلفية ولا تؤخر الواجهة.
+  Promise.resolve().then(function(){
+    return db.collection("vendors").doc(vendorId).set(data, { merge: true });
+  }).catch(function(){
+    return db.collection("vendors").doc(vendorId).update(data).catch(function(){});
+  });
   return { success: true };
 }
 

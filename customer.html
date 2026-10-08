@@ -250,6 +250,14 @@
         provider: (u.providerData && u.providerData[0] && u.providerData[0].providerId === 'google.com') ? 'Google' : 'البريد وكلمة المرور',
         status: (extra && extra.status) || 'active'
       };
+      // إذا عاد الزبون بعد حذفه، اعتبر تسجيل الدخول إنشاءً جديداً وأزل علامة الحذف.
+      try {
+        var deleted = JSON.parse(localStorage.getItem('deleted_customers') || '[]');
+        var emailKey = 'email:' + String(u.email || '').toLowerCase();
+        deleted = deleted.filter(function(k){ return k !== id && k !== emailKey; });
+        localStorage.setItem('deleted_customers', JSON.stringify(deleted));
+      } catch (eDel) {}
+
       var saved = false, error = null;
       try {
         await Promise.race([

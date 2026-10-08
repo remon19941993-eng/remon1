@@ -18,12 +18,40 @@
   }
 
   function smartAccountLink(href, label) {
-    document.querySelectorAll('a[href="join.html"], a[href="customer.html"], a[href="vendor.html"]').forEach(function (a) {
-      var text = (a.textContent || '').trim();
-      if (text.includes('انضم كتاجر') || text.includes('التسجيل') || text.includes('دخول التاجر') || text.includes('حسابي')) {
-        a.dataset.smartAccount = '1';
+    // يوجد زر «حسابي» واحد فقط: الزبون -> customer.html، التاجر -> vendor.html.
+    // لا نحوّل أزرار «انضم كتاجر» أو «دخول التاجر» إلى حسابي.
+    var accountLinks = [];
+    document.querySelectorAll('.nav-links a[href="customer.html"], .nav-links a[href="vendor.html"], .hero-buttons a[href="customer.html"]').forEach(function(a) {
+      accountLinks.push(a);
+    });
+
+    // في شريط الصفحات الداخلية نُبقي رابط حساب واحد فقط.
+    document.querySelectorAll('.nav-links').forEach(function(nav) {
+      var candidates = nav.querySelectorAll('a[href="customer.html"], a[href="vendor.html"]');
+      var kept = false;
+      candidates.forEach(function(a) {
+        if (!kept) {
+          a.href = href;
+          a.textContent = 'حسابي';
+          a.title = 'فتح حسابي';
+          a.classList.add('smart-account-link');
+          kept = true;
+        } else {
+          a.style.display = 'none';
+        }
+      });
+      // «انضم كتاجر» يبقى كما هو، ولا يتحول إلى حسابي.
+    });
+
+    // في الصفحة الرئيسية: رابط الحساب الوحيد هو زر التسجيل/الحساب في الـ hero.
+    document.querySelectorAll('.hero-buttons a[href="customer.html"]').forEach(function(a, i) {
+      if (i === 0) {
         a.href = href;
-        a.textContent = '👤 ' + label;
+        a.textContent = '👤 حسابي';
+        a.title = 'فتح حسابي';
+        a.classList.add('smart-account-link');
+      } else {
+        a.style.display = 'none';
       }
     });
   }
@@ -31,16 +59,20 @@
   async function updateSmartNavigation() {
     if (typeof auth === 'undefined') return;
     var user = auth.currentUser;
-    if (!user) return;
     var target = 'customer.html';
     var label = 'حسابي';
-    try {
-      var v = await db.collection('vendors').doc(user.uid).get();
-      if (v.exists && (v.data().type === 'vendor' || v.data().shopName || v.data().status)) {
-        target = 'vendor.html';
-        label = 'حسابي';
+
+    if (user) {
+      try {
+        var v = await db.collection('vendors').doc(user.uid).get();
+        if (v.exists) {
+          var data = v.data() || {};
+          if (data.type === 'vendor' || data.shopName || data.status) target = 'vendor.html';
+        }
+      } catch (e) {
+        // إذا تعذر Firestore لا نكسر الواجهة؛ العميل يذهب لحسابه.
       }
-    } catch (e) {}
+    }
     smartAccountLink(target, label);
   }
 
@@ -129,11 +161,6 @@
       });
     }
     addProductWhatsAppButtons();
-    setInterval(function () {
-      updateSmartNavigation();
-      addVendorPublishButton();
-      addProductWhatsAppButtons();
-    }, 1200);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

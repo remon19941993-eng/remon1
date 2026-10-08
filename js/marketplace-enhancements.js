@@ -18,20 +18,18 @@
   }
 
   function smartAccountLink(href, label) {
-    // يوجد زر «حسابي» واحد فقط: الزبون -> customer.html، التاجر -> vendor.html.
-    // لا نحوّل أزرار «انضم كتاجر» أو «دخول التاجر» إلى حسابي.
-    var accountLinks = [];
-    document.querySelectorAll('.nav-links a[href="customer.html"], .nav-links a[href="vendor.html"], .hero-buttons a[href="customer.html"]').forEach(function(a) {
-      accountLinks.push(a);
-    });
+    // الصفحة الرئيسية: زر واحد فقط. قبل الدخول = تسجيل الدخول، بعده = حسابي.
+    if (typeof window._remonSetAccountState === 'function') {
+      window._remonSetAccountState(href || null);
+    }
 
-    // في شريط الصفحات الداخلية نُبقي رابط حساب واحد فقط.
+    // الصفحات الداخلية: رابط حساب واحد فقط، ولا يوجد «دخول التاجر» مستقل.
     document.querySelectorAll('.nav-links').forEach(function(nav) {
       var candidates = nav.querySelectorAll('a[href="customer.html"], a[href="vendor.html"]');
       var kept = false;
       candidates.forEach(function(a) {
         if (!kept) {
-          a.href = href;
+          a.href = href || 'customer.html';
           a.textContent = 'حسابي';
           a.title = 'فتح حسابي';
           a.classList.add('smart-account-link');
@@ -40,19 +38,6 @@
           a.style.display = 'none';
         }
       });
-      // «انضم كتاجر» يبقى كما هو، ولا يتحول إلى حسابي.
-    });
-
-    // في الصفحة الرئيسية: رابط الحساب الوحيد هو زر التسجيل/الحساب في الـ hero.
-    document.querySelectorAll('.hero-buttons a[href="customer.html"]').forEach(function(a, i) {
-      if (i === 0) {
-        a.href = href;
-        a.textContent = '👤 حسابي';
-        a.title = 'فتح حسابي';
-        a.classList.add('smart-account-link');
-      } else {
-        a.style.display = 'none';
-      }
     });
   }
 

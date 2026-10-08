@@ -436,13 +436,25 @@ async function deleteVendor(vendorId) {
 
 async function deleteCustomer(customerId, email) {
   try {
+    var deleted = JSON.parse(localStorage.getItem("deleted_customers") || "[]");
+    var key = customerId || (email ? "email:" + String(email).toLowerCase() : "");
+    if (key && deleted.indexOf(key) === -1) deleted.push(key);
+    if (email) {
+      var emailKey = "email:" + String(email).toLowerCase();
+      if (deleted.indexOf(emailKey) === -1) deleted.push(emailKey);
+    }
+    localStorage.setItem("deleted_customers", JSON.stringify(deleted));
+  } catch (e0) {}
+
+  try {
     if (customerId) await db.collection("customers").doc(customerId).delete();
   } catch (e) {}
+
   try {
     var local = JSON.parse(localStorage.getItem("local_customers") || "[]");
     local = local.filter(function(c) {
       if (customerId && c.id === customerId) return false;
-      if (email && c.email === email) return false;
+      if (email && c.email && String(c.email).toLowerCase() === String(email).toLowerCase()) return false;
       return true;
     });
     localStorage.setItem("local_customers", JSON.stringify(local));

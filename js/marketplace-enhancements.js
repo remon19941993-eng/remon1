@@ -44,10 +44,10 @@
   async function updateSmartNavigation() {
     if (typeof auth === 'undefined') return;
     var user = auth.currentUser;
-    var target = 'customer.html';
-    var label = 'حسابي';
+    var target = null;
 
     if (user) {
+      target = 'customer.html';
       try {
         var v = await db.collection('vendors').doc(user.uid).get();
         if (v.exists) {
@@ -55,10 +55,12 @@
           if (data.type === 'vendor' || data.shopName || data.status) target = 'vendor.html';
         }
       } catch (e) {
-        // إذا تعذر Firestore لا نكسر الواجهة؛ العميل يذهب لحسابه.
+        // إذا تعذر Firestore نعتبره زبوناً مؤقتاً.
       }
     }
-    smartAccountLink(target, label);
+    // غير مسجل: افتح قائمة الاختيار (زبون أو انضم كتاجر).
+    // مسجل: افتح حسابه مباشرة.
+    smartAccountLink(target, target ? 'حسابي' : 'تسجيل الدخول');
   }
 
   function addVendorPublishButton() {

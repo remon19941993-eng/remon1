@@ -41,12 +41,12 @@
           <div class="logo-mark" title="سوقي"><svg class="logo-eagle" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="نسر سوريا"><defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a3a42"/><stop offset="45%" stop-color="#1a1a22"/><stop offset="100%" stop-color="#0d0d12"/></linearGradient></defs><path fill="url(#eg)" d="M8 28c2-8 10-16 18-18-2 6-2 12 0 18-6 0-12 2-18 6 2-2 4-4 0-6z"/><path fill="url(#eg)" d="M56 28c-2-8-10-16-18-18 2 6 2 12 0 18 6 0 12 2 18 6-2-2-4-4 0-6z"/><path fill="url(#eg)" d="M32 12c4 0 8 3 9 8 1 4 0 8-2 12l-7 18h-1l-7-18c-2-4-3-8-2-12 1-5 5-8 10-8z"/><circle cx="32" cy="14" r="5" fill="url(#eg)"/><path fill="#c9a227" d="M32 10l2 4h-4z"/><rect x="27" y="22" width="10" height="12" rx="1" fill="#007A3D"/><rect x="27" y="26" width="10" height="4" fill="#fff"/><rect x="27" y="30" width="10" height="4" fill="#000"/><circle cx="29.5" cy="28" r="0.7" fill="#CE1126"/><circle cx="32" cy="28" r="0.7" fill="#CE1126"/><circle cx="34.5" cy="28" r="0.7" fill="#CE1126"/><path fill="url(#eg)" d="M28 48l4 10 4-10h-8z"/></svg></div>
           <div class="logo-text"><strong class="brand-name">سوقي</strong><small>سوق إلكتروني</small></div><span class="logo-chevron">▾</span>
         </button>
-        <div class="logo-dropdown" id="logoDropdown" role="menu"><a href="index.html" role="menuitem" class="dd-item active">🏠 الرئيسية</a><a href="join.html" role="menuitem" class="dd-item">🏪 انضم كتاجر</a><a href="#featuresMenu" role="menuitem" class="dd-item" onclick="document.getElementById('logoDropdown').classList.remove('open')">✨ المميزات</a><a href="vendor.html" role="menuitem" class="dd-item">🔑 دخول التاجر</a><a href="customer.html" role="menuitem" class="dd-item">📝 التسجيل</a></div>
+        <div class="logo-dropdown" id="logoDropdown" role="menu"><a href="index.html" role="menuitem" class="dd-item active">🏠 الرئيسية</a><a href="#featuresMenu" role="menuitem" class="dd-item" onclick="document.getElementById('logoDropdown').classList.remove('open')">✨ المميزات</a></div>
       </div>
       <form class="nav-search" id="navSearchForm" onsubmit="return doProductSearch(event)"><input type="search" id="navSearchInput" placeholder="ابحث عن منتجات..." autocomplete="off" /><button type="submit" class="nav-search-btn" title="بحث">🔍</button></form>
     </div>
   </header>
-  <section class="hero"><div class="container hero-content"><div class="hero-text"><h1>سوق واحد<br>لجميع التجار</h1><p>اكتشف آلاف المنتجات من أفضل التجار<br>إنشاءات • إلكترونيات • أقمشة • تجميل • كمبيوتر</p><div class="hero-buttons"><a href="customer.html" class="btn btn-primary smart-account-link">👤 حسابي</a></div><div class="trial-badge">🎁 اشتراك مجاني 3 أيام للتجار الجدد</div></div><div class="hero-visual"><img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&q=80" alt="أجهزة أنيقة" class="hero-visual-img"></div></div></section>
+  <section class="hero"><div class="container hero-content"><div class="hero-text"><h1>سوق واحد<br>لجميع التجار</h1><p>اكتشف آلاف المنتجات من أفضل التجار<br>إنشاءات • إلكترونيات • أقمشة • تجميل • كمبيوتر</p><div class="hero-buttons"><a href="customer.html" id="mainAccountBtn" class="btn btn-primary smart-account-link">👤 تسجيل الدخول</a></div><div class="trial-badge">🎁 اشتراك مجاني 3 أيام للتجار الجدد</div></div><div class="hero-visual"><img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&q=80" alt="أجهزة أنيقة" class="hero-visual-img"></div></div></section>
   <section id="categories" class="categories"><div class="container"><h2 class="section-title">التصنيفات الرئيسية</h2><div class="categories-grid">
     <a href="category.html?cat=construction" class="category-card"><div class="cat-img"><img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&q=80" alt="مواد بناء"></div><div class="cat-info"><h3>مواد البناء</h3><p>إسمنت وحديد وبلاط</p></div></a>
     <a href="category.html?cat=pc" class="category-card"><div class="cat-img"><img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80" alt="كمبيوتر"></div><div class="cat-info"><h3>كمبيوتر وإلكترونيات</h3><p>لابتوب وهواتف</p></div></a>
@@ -61,8 +61,58 @@
   <div class="ai-assistant" onclick="toggleAI()" title="مساعد سوقي الذكي"><div class="ai-avatar"><span class="ai-face" id="aiFace">😊</span></div><span class="ai-text">مساعد سوقي</span></div>
   <div class="ai-panel" id="aiPanel"><div class="ai-header"><span>🤖 مساعد سوقي AI</span><button type="button" onclick="toggleAI()">×</button></div><div class="ai-body"><p id="aiReply">مرحباً! اختر سؤالاً أو اكتب رسالتك:</p><div class="ai-quick" style="display:flex;flex-direction:column;gap:8px;margin:12px 0;"><button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('products')">📦 البحث عن منتجات</button><button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('vendor')">🏪 نصائح للتجار</button><button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('quiz')">✨ تحدي الأسئلة والخصم</button><button type="button" class="btn btn-outline" style="width:100%;text-align:right;" onclick="aiAsk('admin')">📞 التواصل مع الإدارة</button></div><div style="display:flex;gap:8px;"><input type="text" placeholder="اكتب سؤالك..." class="ai-input" id="aiInput" style="flex:1;"><button type="button" class="btn btn-primary" onclick="aiSend()">إرسال</button></div></div></div>
   <div class="modal" id="quizModal"><div class="modal-content"><button class="modal-close" onclick="closeQuiz()">×</button><h3 id="quizTitle">✨ تحدي السؤال</h3><div class="quiz-cat-bar" id="quizCatBar"><button type="button" data-cat="all" class="active" onclick="switchQuizCat('all')">الكل</button><button type="button" data-cat="geo" onclick="switchQuizCat('geo')">جغرافيا</button><button type="button" data-cat="islamic" onclick="switchQuizCat('islamic')">إسلامية</button><button type="button" data-cat="general" onclick="switchQuizCat('general')">عامة</button></div><p class="quiz-question" id="quizQuestion">...</p><div class="quiz-options" id="quizOptions"></div><p class="quiz-reward">أجب بشكل صحيح واحصل على بطاقة خصم</p><div id="quizResult" class="quiz-result hidden"></div></div></div>
-  <script src="js/quiz.js"></script><script src="js/main.js"></script>
+  <div id="accountChoiceModal" class="modal" aria-hidden="true" style="display:none;z-index:9999;">
+  <div class="modal-content" style="max-width:420px;text-align:center;">
+    <button class="modal-close" type="button" onclick="closeAccountChoice()">×</button>
+    <h3 style="margin:8px 0 6px;">👤 حسابي</h3>
+    <p style="color:#777;margin-bottom:20px;">اختر طريقة الدخول أو إنشاء حسابك</p>
+    <div style="display:grid;gap:10px;">
+      <a href="customer.html" class="btn btn-primary full">👤 زبون — تسجيل / دخول</a>
+      <a href="join.html" class="btn btn-outline full">🏪 انضم كتاجر</a>
+    </div>
+  </div>
+</div><script src="js/quiz.js"></script><script src="js/main.js"></script>
   <script>
+(function(){
+  function closeAccountChoice(){
+    var m=document.getElementById('accountChoiceModal');
+    if(m){m.style.display='none';m.setAttribute('aria-hidden','true');}
+  }
+  window.closeAccountChoice=closeAccountChoice;
+  window.openAccountChoice=function(){
+    var m=document.getElementById('accountChoiceModal');
+    if(m){m.style.display='flex';m.setAttribute('aria-hidden','false');}
+  };
+  var b=document.getElementById('mainAccountBtn');
+  if(b){
+    b.addEventListener('click',function(e){
+      if(window._remonAccountTarget){
+        e.preventDefault();
+        location.href=window._remonAccountTarget;
+        return;
+      }
+      e.preventDefault();
+      window.openAccountChoice();
+    });
+  }
+  document.addEventListener('click',function(e){
+    var m=document.getElementById('accountChoiceModal');
+    if(m && e.target===m) closeAccountChoice();
+  });
+  window._remonSetAccountState=function(target){
+    window._remonAccountTarget=target||null;
+    var b=document.getElementById('mainAccountBtn');
+    if(!b)return;
+    if(target){
+      b.href=target;
+      b.textContent='👤 حسابي';
+    }else{
+      b.href='customer.html';
+      b.textContent='👤 تسجيل الدخول';
+    }
+  };
+})();
+</script><script>
     (function(){var btn=document.getElementById('logoMenuBtn'),dd=document.getElementById('logoDropdown');if(!btn||!dd)return;btn.addEventListener('click',function(e){e.stopPropagation();var open=dd.classList.toggle('open');btn.setAttribute('aria-expanded',open?'true':'false');});document.addEventListener('click',function(){dd.classList.remove('open');btn.setAttribute('aria-expanded','false');});dd.addEventListener('click',function(e){e.stopPropagation();});})();
     function doProductSearch(e){if(e)e.preventDefault();var q=(document.getElementById('navSearchInput')||{}).value||'';q=q.trim().toLowerCase();if(!q){var sec=document.getElementById('productsGrid')||document.querySelector('.featured');if(sec)sec.scrollIntoView({behavior:'smooth'});return false;}var grid=document.getElementById('productsGrid');if(grid){var cards=grid.querySelectorAll('.product-card, .p-card, [data-name]'),found=0;cards.forEach(function(card){var name=(card.getAttribute('data-name')||card.textContent||'').toLowerCase(),show=name.indexOf(q)!==-1;card.style.display=show?'':'none';if(show)found++;});if(found===0){if(typeof loadFeaturedProducts==='function')loadFeaturedProducts(q);else if(typeof renderProducts==='function')renderProducts(q);}var featured=document.querySelector('.featured');if(featured)featured.scrollIntoView({behavior:'smooth'});}return false;}
     (function(){function updateCustomerLinks(user){var remembered=false;try{remembered=localStorage.getItem('souqi_customer_logged_in')==='1';}catch(e){}var isCustomer=!!user&&remembered;document.querySelectorAll('a[href="customer.html"]').forEach(function(link){if(isCustomer){link.textContent='حسابي';link.setAttribute('href','customer.html');link.title='فتح حسابي';}});}if(typeof auth!=='undefined'){auth.onAuthStateChanged(updateCustomerLinks);}})();

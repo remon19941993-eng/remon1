@@ -13,9 +13,13 @@ on:
       - 'images/**'
       - '.github/workflows/android-app.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,18 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Copy website into app
-        run: npm run copy:web
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -43,11 +36,31 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Copy website into app
+        run: npm run copy:web
+
+      - name: Validate Capacitor setup
+        run: npx cap doctor
+
+      - name: Add Android platform if missing
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          else
+            echo "Android platform directory already exists; skipping cap add."
+          fi
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
       - name: Build Android outputs
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew bundleRelease assembleDebug
+          ./gradlew --no-daemon bundleRelease assembleDebug
 
       - name: Upload Android App Bundle
         uses: actions/upload-artifact@v4
@@ -55,8 +68,9 @@ jobs:
           name: remon-android-aab
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
+          retention-days: 14
 
-      - name: Upload Android APK for device testing
+      - name: Upload Android debug APK
         uses: actions/upload-artifact@v4
         with:
           name: remon-android-debug-apk

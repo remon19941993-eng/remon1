@@ -1,6 +1,10 @@
 // Stable Google customer login: mobile uses redirect directly; desktop uses popup.
 // Capture the Google button before the inline handler so old/slow logic cannot run twice.
 (function () {
+  // This handler is exclusively for customer.html. join.html has its own vendor Google flow.
+  var pagePath = String(location.pathname || '').toLowerCase();
+  if (!pagePath.endsWith('/customer.html') && !pagePath.endsWith('customer.html')) return;
+
   function startGoogleLogin(event) {
     var btn = event.target && event.target.closest ? event.target.closest('#googleBtn') : null;
     if (!btn) return;

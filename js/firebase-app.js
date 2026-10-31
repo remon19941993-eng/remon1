@@ -227,8 +227,18 @@ async function getProducts(category, opts) {
     list = list.concat(local);
   } catch (e) {}
   try {
+    var user = auth.currentUser;
+    var query;
+    if (opts && opts.all) {
+      if (!user) throw new Error("يجب تسجيل الدخول كمسؤول");
+      var token = await user.getIdTokenResult();
+      if (token.claims.admin !== true) throw new Error("غير مصرح بعرض جميع المنتجات");
+      query = db.collection("products");
+    } else {
+      query = db.collection("products").where("approved", "==", true);
+    }
     var snap = await Promise.race([
-      db.collection("products").get(),
+      query.get(),
       new Promise(function(_, rej) { setTimeout(function() { rej(new Error("t")); }, 5000); })
     ]);
     var remote = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });

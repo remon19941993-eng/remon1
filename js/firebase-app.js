@@ -184,43 +184,39 @@ async function getCurrentVendor() {
   return await ensureVendorDoc(user, {});
 }
 
-// نشر فوري محلياً + محاولة Firestore في الخلفية
+// حفظ المنتج في Firestore أولاً؛ لا نعلن النجاح قبل تأكيد الحفظ.
 async function publishProductToFirebase(product) {
+  var user = auth.currentUser;
+  if (!user || !product || product.vendorId !== user.uid) {
+    return { success: false, error: "انتهت الجلسة أو أن حساب التاجر غير صحيح. سجّل الدخول مجدداً." };
+  }
   var payload = {
-    name: product.name || "",
-    price: product.price || "",
-    desc: product.desc || "",
+    name: String(product.name || "").trim(),
+    price: String(product.price || ""),
+    desc: String(product.desc || ""),
     img: (product.img && product.img.length < 350000) ? product.img : "",
-    category: product.category || "",
-    vendor: product.vendor || "",
-    vendorId: product.vendorId || "",
-    phone: product.phone || "",
+    category: String(product.category || ""),
+    vendor: String(product.vendor || ""),
+    vendorId: user.uid,
+    phone: String(product.phone || ""),
     createdAt: new Date().toISOString(),
-    approved: false   // لا يظهر للعامة حتى يوافق الأدمن
+    approved: false
   };
-
-  // 1) حفظ محلي فوري — لا ينتظر الشبكة
+  if (!payload.name) return { success: false, error: "اكتب اسم المنتج أولاً." };
   try {
-    var local = JSON.parse(localStorage.getItem("local_products") || "[]");
-    payload.id = "local_" + Date.now();
-    local.unshift(payload);
-    localStorage.setItem("local_products", JSON.stringify(local.slice(0, 100)));
-  } catch (e) {}
-
-  // 2) محاولة السيرفر بدون تعليق الواجهة
-  try {
-    var serverPayload = Object.assign({}, payload);
-    delete serverPayload.id;
-    var done = false;
-    var timer = setTimeout(function() { done = true; }, 8000);
-    db.collection("products").add(serverPayload).then(function() {
-      clearTimeout(timer);
-    }).catch(function() {
-      clearTimeout(timer);
-    });
-  } catch (e) {}
-
-  return { success: true };
+    var ref = await db.collection("products").add(payload);
+    payload.id = ref.id;
+    try {
+      var local = JSON.parse(localStorage.getItem("local_products") || "[]");
+      local = local.filter(function(p) { return p.id !== ref.id; });
+      local.unshift(payload);
+      localStorage.setItem("local_products", JSON.stringify(local.slice(0, 100)));
+    } catch (storageError) {}
+    return { success: true, id: ref.id };
+  } catch (error) {
+    console.error("Product save failed:", error);
+    return { success: false, error: "لم يتم حفظ المنتج على الخادم (" + (error.code || "network-error") + "). لم يُنشر المنتج؛ تحقق من الاتصال والصلاحيات ثم أعد المحاولة." };
+  }
 }
 
 async function getProducts(category, opts) {
@@ -231,8 +227,18 @@ async function getProducts(category, opts) {
     list = list.concat(local);
   } catch (e) {}
   try {
+    var user = auth.currentUser;
+    var query;
+    if (opts && opts.all) {
+      if (!user) throw new Error("يجب تسجيل الدخول كمسؤول");
+      var token = await user.getIdTokenResult();
+      if (token.claims.admin !== true) throw new Error("غير مصرح بعرض جميع المنتجات");
+      query = db.collection("products");
+    } else {
+      query = db.collection("products").where("approved", "==", true);
+    }
     var snap = await Promise.race([
-      db.collection("products").get(),
+      query.get(),
       new Promise(function(_, rej) { setTimeout(function() { rej(new Error("t")); }, 5000); })
     ]);
     var remote = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
@@ -512,10 +518,24 @@ function compressImageFile(file, maxWidth, quality) {
 
 
 async function getMyProducts(vendorId) {
-  var all = await getProducts();
-  return all.filter(function(p) {
-    return p.vendorId === vendorId || (p.id && String(p.id).indexOf("local_") === 0 && p.vendorId === vendorId);
-  });
+  var user = auth.currentUser;
+  if (!user || user.uid !== vendorId) throw new Error("غير مصرح بعرض منتجات هذا التاجر");
+  var list = [];
+  try {
+    var snap = await db.collection("products").where("vendorId", "==", vendorId).get();
+    list = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+  } catch (error) {
+    console.error("Load merchant products failed:", error);
+    throw error;
+  }
+  try {
+    var local = JSON.parse(localStorage.getItem("local_products") || "[]");
+    local.forEach(function(p) {
+      if (p.vendorId === vendorId && !list.some(function(x) { return x.id === p.id; })) list.push(p);
+    });
+  } catch (e) {}
+  list.sort(function(a,b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  return list;
 }
 
 async function deleteProduct(product) {
@@ -544,20 +564,27 @@ async function deleteProduct(product) {
 }
 
 async function updateProduct(product, updates) {
+  var user = auth.currentUser;
+  if (!user || !product || product.vendorId !== user.uid) throw new Error("غير مصرح بتعديل هذا المنتج");
+  var safeUpdates = {
+    name: String(updates.name || "").trim(),
+    price: String(updates.price || ""),
+    desc: String(updates.desc || ""),
+    img: String(updates.img || ""),
+    category: String(updates.category || ""),
+    vendor: String(updates.vendor || ""),
+    phone: String(updates.phone || ""),
+    approved: false
+  };
+  if (product.id && String(product.id).indexOf("local_") !== 0) {
+    await db.collection("products").doc(product.id).update(safeUpdates);
+  } else {
+    throw new Error("هذا المنتج محفوظ محلياً فقط. أعد نشره بعد التأكد من الاتصال بالإنترنت.");
+  }
   try {
     var local = JSON.parse(localStorage.getItem("local_products") || "[]");
-    local = local.map(function(p) {
-      if ((product.id && p.id === product.id) || (p.name === product.name && p.createdAt === product.createdAt)) {
-        return Object.assign({}, p, updates);
-      }
-      return p;
-    });
+    local = local.map(function(p) { return p.id === product.id ? Object.assign({}, p, safeUpdates) : p; });
     localStorage.setItem("local_products", JSON.stringify(local));
   } catch (e) {}
-  if (product.id && String(product.id).indexOf("local_") !== 0) {
-    try {
-      await db.collection("products").doc(product.id).update(updates);
-    } catch (e) {}
-  }
   return { success: true };
 }

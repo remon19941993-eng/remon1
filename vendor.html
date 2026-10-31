@@ -378,7 +378,10 @@
           editingProduct = null;
           document.getElementById('editingId').value = '';
         } else {
-          await publishProductToFirebase(data);
+          var publishResult = await publishProductToFirebase(data);
+          if (!publishResult || publishResult.success !== true) {
+            throw new Error((publishResult && publishResult.error) || 'لم يتم حفظ المنتج في قاعدة البيانات');
+          }
         }
         document.getElementById('productForm').classList.add('hidden');
         document.getElementById('publishSuccess').classList.remove('hidden');
@@ -458,17 +461,9 @@
     }
 
     async function logoutVendor() {
-      try {
-        var vid = (currentVendor && currentVendor.id) || (auth.currentUser && auth.currentUser.uid);
-        if (vid && typeof deleteVendor === 'function') {
-          await deleteVendor(vid);
-        }
-      } catch (e) {}
-      try { sessionStorage.removeItem('souqi_vendor'); } catch (e2) {}
+      try { sessionStorage.removeItem('souqi_vendor'); } catch (e) {}
       currentVendor = null;
-      try {
-        await auth.signOut();
-      } catch (e3) {}
+      try { await auth.signOut(); } catch (e2) { console.error('Vendor sign out failed:', e2); }
       showLogin();
     }
 

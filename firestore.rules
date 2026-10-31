@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    match /vendors/{vendorId} {
+      allow get: if isAdmin() || isOwner(vendorId);
+      allow list: if isAdmin();
+      allow create: if isOwner(vendorId)
+        && request.resource.data.status == 'trial'
+        && request.resource.data.id == vendorId;
+      allow update: if isAdmin() || (isOwner(vendorId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['fullName', 'phone', 'shopName', 'category', 'email', 'updatedAt']));
+      allow delete: if isAdmin();
+    }
+
+    match /customers/{customerId} {
+      allow get: if isAdmin() || isOwner(customerId);
+      allow list: if isAdmin();
+      allow create: if isOwner(customerId)
+        && request.resource.data.id == customerId;
+      allow update: if isAdmin() || (isOwner(customerId)
+        && request.resource.data.id == resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.vendorId == request.auth.uid)
+        || resource.data.approved == true;
+      allow create: if signedIn()
+        && request.resource.data.vendorId == request.auth.uid
+        && request.resource.data.approved == false;
+      allow update: if isAdmin() || (signedIn()
+        && resource.data.vendorId == request.auth.uid
+        && request.resource.data.vendorId == resource.data.vendorId
+        && request.resource.data.approved == false);
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.vendorId == request.auth.uid);
+    }
+  }
+}

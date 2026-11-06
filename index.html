@@ -25,6 +25,7 @@
     .cat-info p { font-size:12px; color:#777; }
   </style>
   <link rel="stylesheet" href="css/remon-theme.css?v=20261106">
+  <link rel="stylesheet" href="css/remon-icons.css?v=20261106">
 </head>
 <body>
   <div class="quran-banner">
@@ -118,5 +119,6 @@
     function doProductSearch(e){if(e)e.preventDefault();var q=(document.getElementById('navSearchInput')||{}).value||'';q=q.trim().toLowerCase();if(!q){var sec=document.getElementById('productsGrid')||document.querySelector('.featured');if(sec)sec.scrollIntoView({behavior:'smooth'});return false;}var grid=document.getElementById('productsGrid');if(grid){var cards=grid.querySelectorAll('.product-card, .p-card, [data-name]'),found=0;cards.forEach(function(card){var name=(card.getAttribute('data-name')||card.textContent||'').toLowerCase(),show=name.indexOf(q)!==-1;card.style.display=show?'':'none';if(show)found++;});if(found===0){if(typeof loadFeaturedProducts==='function')loadFeaturedProducts(q);else if(typeof renderProducts==='function')renderProducts(q);}var featured=document.querySelector('.featured');if(featured)featured.scrollIntoView({behavior:'smooth'});}return false;}
     (function(){function updateCustomerLinks(user){var remembered=false;try{remembered=localStorage.getItem('souqi_customer_logged_in')==='1';}catch(e){}var isCustomer=!!user&&remembered;document.querySelectorAll('a[href="customer.html"]').forEach(function(link){if(isCustomer){link.textContent='حسابي';link.setAttribute('href','customer.html');link.title='فتح حسابي';}});}if(typeof auth!=='undefined'){auth.onAuthStateChanged(updateCustomerLinks);}})();
   </script>
+  <script src="js/remon-icons.js?v=20261106"></script>
 </body>
 </html>

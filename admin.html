@@ -52,6 +52,7 @@
     @media (max-width: 700px) { .admin-dashboard { flex-direction: column; } .sidebar { width: 100%; } .sidebar-nav { display: flex; flex-wrap: wrap; gap: 4px; } .sidebar-nav a { flex: 1; text-align: center; min-width: 70px; padding: 10px 6px; font-size: 12px; } .btn-act { min-width: 100px; padding: 10px 12px; } }
   </style>
   <link rel="stylesheet" href="css/remon-theme.css?v=20261106">
+  <link rel="stylesheet" href="css/remon-icons.css?v=20261106">
 </head>
 <body>
   <div class="quran-banner"><p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p><p class="ayah">فَذَكِّرْ فَمَا أَنتَ بِنِعْمَةِ رَبِّكَ بِكَاهِنٍ وَلَا مَجْنُونٍ</p></div>
@@ -89,5 +90,6 @@
     function adminDeleteProduct(i){var p=productsCache[i];if(!p)return;productsCache.splice(i,1);renderProductsFast();if(p.id&&!String(p.id).startsWith('local_'))db.collection('products').doc(p.id).delete().catch(function(){});try{var local=JSON.parse(localStorage.getItem('local_products')||'[]').filter(function(x){return x.id!==p.id;});localStorage.setItem('local_products',JSON.stringify(local));}catch(_){} }
     document.addEventListener('DOMContentLoaded',function(){if(localStorage.getItem('admin_logged_in')==='true'){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminDashboard').classList.remove('hidden');loadVendors();}});
   </script>
+  <script src="js/remon-icons.js?v=20261106"></script>
 </body>
 </html>
